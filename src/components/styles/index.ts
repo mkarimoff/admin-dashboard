@@ -25,3 +25,28 @@ export const Wrapper = styled.div`
   border-bottom: 1px solid lightgray;
   padding: 2px 10px;
 `;
+
+export const ProductModal = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  .inputs-con {
+    display: flex;
+    gap: 10px;
+    .inputs-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      input,
+      select {
+        width: 350px;
+        height: 48px;
+        background: var(--product-background, #f6f6f6);
+        border: none;
+        padding: 10px;
+      }
+    }
+  }
+`;

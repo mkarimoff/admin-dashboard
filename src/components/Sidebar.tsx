@@ -18,6 +18,7 @@ import { closeSidebar } from "../utils";
 import Modal from "@mui/joy/Modal";
 import Button from "@mui/joy/Button";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import logo from "../assets/logo.svg"
 
 export default function Sidebar() {
   const location = useLocation();
@@ -83,10 +84,8 @@ export default function Sidebar() {
           onClick={() => closeSidebar()}
         />
         <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-          <IconButton variant="soft" color="primary" size="sm">
-            Logo
-          </IconButton>
-          <Typography level="title-lg">Furnimall</Typography>
+            <img src={logo} alt="logo" style={{width:'30px',background:'none'}} />
+          <Typography level="title-lg">Furnimall.</Typography>
           <ColorSchemeToggle sx={{ ml: "auto" }} />
         </Box>
         <Divider />
@@ -118,7 +117,7 @@ export default function Sidebar() {
               <ListItemButton
                 sx={{
                   backgroundColor: isActive("/products-list")
-                    ? "lightgray"
+                    ? "#3d87db4a"
                     : "transparent",
                 }}
               >
@@ -136,7 +135,7 @@ export default function Sidebar() {
               <ListItemButton
                 sx={{
                   backgroundColor: isActive("/users-list")
-                    ? "lightgray"
+                    ? "#3d87db4a"
                     : "transparent",
                 }}
               >
@@ -154,7 +153,7 @@ export default function Sidebar() {
               <ListItemButton
                 sx={{
                   backgroundColor: isActive("/messages")
-                    ? "lightgray"
+                    ? "#3d87db4a"
                     : "transparent",
                 }}
               >
