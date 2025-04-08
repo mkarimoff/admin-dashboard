@@ -1,0 +1,1 @@
+export const baseApi = "http://localhost:5050/dev-api"

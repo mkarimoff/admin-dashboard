@@ -12,7 +12,7 @@ import Sheet from "@mui/joy/Sheet";
 import DashboardRoundedIcon from "@mui/icons-material/DashboardRounded";
 import QuestionAnswerRoundedIcon from "@mui/icons-material/QuestionAnswerRounded";
 import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
-import ColorSchemeToggle from "../components/ColorSchemaToggle";
+import ColorSchemeToggle from "./ColorSchemaToggle";
 import GroupIcon from "@mui/icons-material/Group";
 import { closeSidebar } from "../utils";
 import Modal from "@mui/joy/Modal";

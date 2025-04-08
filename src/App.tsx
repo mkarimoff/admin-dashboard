@@ -6,6 +6,7 @@ import { Route, Routes, useLocation } from "react-router-dom";
 import UsersList from "./components/pages/usersList";
 import ProductsList from "./components/pages/productsList";
 import LoginComponent from "./components/auth/login";
+import ProductDetail from "./components/pages/product-detail";
 
 export default function JoyOrderDashboardTemplate() {
   let location = useLocation();
@@ -21,6 +22,7 @@ export default function JoyOrderDashboardTemplate() {
           <Route path="/" element={<LoginComponent />} />
           <Route path="/users-list" element={<UsersList />} />
           <Route path="/products-list" element={<ProductsList />} />
+          <Route path="/product-detail" element={<ProductDetail />} />
         </Routes>
       </Box>
     </CssVarsProvider>

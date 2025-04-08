@@ -43,10 +43,16 @@ export const ProductModal = styled.div`
       select {
         width: 350px;
         height: 48px;
-        background: var(--product-background, #f6f6f6);
         border: none;
         padding: 10px;
       }
     }
   }
 `;
+
+export const ProDetailCon = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+`
