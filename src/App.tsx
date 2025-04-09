@@ -22,7 +22,7 @@ export default function JoyOrderDashboardTemplate() {
           <Route path="/" element={<LoginComponent />} />
           <Route path="/users-list" element={<UsersList />} />
           <Route path="/products-list" element={<ProductsList />} />
-          <Route path="/product-detail" element={<ProductDetail />} />
+          <Route path="/product-detail/:id" element={<ProductDetail />} />
         </Routes>
       </Box>
     </CssVarsProvider>

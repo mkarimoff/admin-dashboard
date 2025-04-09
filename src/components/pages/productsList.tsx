@@ -8,7 +8,7 @@ import { Link } from "react-router-dom";
 import { Container, ProductModal } from "../styles";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { baseApi } from "../utils/api"
+import { baseApi } from "../utils/api";
 import { useColorScheme } from "@mui/joy/styles";
 import { useTheme } from "@mui/joy/styles"; // add this if not already
 
@@ -656,7 +656,7 @@ const ProductsList = () => {
                 </td>
                 <td>
                   <Link
-                    to={"/product-detail"}
+                    to={`/product-detail/${product._id}`}
                     style={{ textDecoration: "none" }}
                   >
                     <Typography color="primary" sx={{ cursor: "pointer" }}>

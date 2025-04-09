@@ -51,8 +51,55 @@ export const ProductModal = styled.div`
 `;
 
 export const ProDetailCon = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  padding: 2rem;
+  max-width: 900px;
+  margin: auto;
+  justify-content: end;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+
+  strong{
+   font-weight: 700;
+  }
+  .desc{
+    width: 300px;
+  }
+  .buttons-wrap{
+    display: flex;
+    justify-content: end;
+    gap: 20px;
+  }
+`;
+
+export const ImageGallery = styled.div`
+  margin-bottom: 2rem;
+`;
+
+export const MainImagePlaceholder = styled.div`
   width: 100%;
-`
+  height: 400px;
+  background-color: #e0e0e0;
+  color: #555;
+  font-size: 1.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 16px;
+  margin-bottom: 1rem;
+`;
+
+export const ThumbnailRow = styled.div`
+  display: flex;
+  gap: 1rem;
+`;
+
+export const ThumbnailPlaceholder = styled.div`
+  width: 100px;
+  height: 100px;
+  background-color: #ccc;
+  color: #333;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 12px;
+  font-size: 0.9rem;
+`;

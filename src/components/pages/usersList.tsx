@@ -3,27 +3,47 @@ import Sheet from "@mui/joy/Sheet";
 import { Box, Button, Input, Typography } from "@mui/joy";
 import { Link } from "react-router-dom";
 import { Container } from "../styles";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { baseApi } from "../utils/api";
 
 
-function createData(
-  name: string,
-  calories: number,
-  fat: number,
-  carbs: number,
-  protein: number
-) {
-  return { name, calories, fat, carbs, protein };
+interface User {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: number;
+  number: number;
+  address: string;
 }
 
-const rows = [
-  createData("Frozen yoghurt", 159, 6.0, 24, 4.0),
-  createData("Ice cream sandwich", 237, 9.0, 37, 4.3),
-  createData("Eclair", 262, 16.0, 24, 6.0),
-  createData("Cupcake", 305, 3.7, 67, 4.3),
-  createData("Gingerbread", 356, 16.0, 49, 3.9),
-];
-
 const UsersList = () => {
+
+
+
+  const [users, setUsers] = useState<User[]>([]);
+  // const [firstName, setFirstName] = useState("");
+  // const [lastName, setLastName] = useState("");
+  // const [email, setEmail] = useState("");
+  // const [password, setPassword] = useState<number | "">("");
+  // const [number, setNumber] = useState<number | "">("");
+  // const [address, setAddress] = useState("");
+  // const [error, setError] = useState<string | null>(null);
+
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      const response = await axios.get(`${baseApi}/products/getUsers`);
+      setUsers(response.data.products);
+    } catch (error) {
+      console.error("Failed to fetch products", error);
+    }
+  };
   return (
     <Container>
       <Box
@@ -79,12 +99,12 @@ const UsersList = () => {
             </tr>
           </thead>
           <tbody>
-            {rows.map((row) => (
-              <tr key={row.name}>
-                <td>1</td>
-                <td>{row.name}</td>
-                <td>{row.calories}</td>
-                <td>{row.fat}</td>
+            {users.map((user,index) => (
+              <tr key={user._id}>
+                <td>{index +1}</td>
+                <td>{user.firstName}</td>
+                <td>{user.email}</td>
+                <td>{user.number}</td>
 
                 <td>
                   <Link to={":id"} style={{ textDecoration: "none" }}>
