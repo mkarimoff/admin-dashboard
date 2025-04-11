@@ -20,7 +20,10 @@ interface Product {
   quantity: number;
   description: string;
   type: string;
-  // image: string;
+  MainImage: String;
+  image2: String;
+  image3: String;
+  image4: String;
 }
 
 const ProductsList = () => {
@@ -38,11 +41,11 @@ const ProductsList = () => {
   const [quantity, setQuantity] = useState<number | "">("");
   const [description, setDescription] = useState("");
   const [type, setType] = useState("");
-  // const [image, setImage] = useState<File | null>(null);
+  const [MainImage, setMainImage] = useState<File | null>(null);
+  const [image2, setImage2] = useState<File | null>(null);
+  const [image3, setImage3] = useState<File | null>(null);
+  const [image4, setImage4] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
-  // const [imagePreviews, setImagePreviews] = React.useState<string[]>(
-  //   Array(4).fill("https://via.placeholder.com/150")
-  // );
 
   useEffect(() => {
     fetchProducts();
@@ -60,7 +63,14 @@ const ProductsList = () => {
   const addProduct = async () => {
     setError(null); // Reset error on new submission
 
-    if (!title || !price || !description || !quantity || !discount || !type) {
+    if (
+      !title ||
+      !quantity ||
+      !price ||
+      discount === "" ||
+      !description ||
+      !type
+    ) {
       setError("All fields are required, including an image.");
       return;
     }
@@ -78,11 +88,15 @@ const ProductsList = () => {
       formData.append("discount", discount.toString());
       formData.append("quantity", quantity.toString());
       formData.append("type", type);
-      // formData.append("image", image); // ✅ Send image
+
+      if (MainImage) formData.append("MainImage", MainImage);
+      if (image2) formData.append("image2", image2);
+      if (image3) formData.append("image3", image3);
+      if (image4) formData.append("image4", image4);
 
       await axios.post(`${baseApi}/products/add`, formData, {
         headers: {
-          "Content-Type": "multipart/form-data", // ✅ Important for file uploads
+          "Content-Type": "multipart/form-data",
         },
       });
 
@@ -93,11 +107,31 @@ const ProductsList = () => {
       setType("");
       setDiscount("");
       setQuantity("");
-      // setImage(null);
-      setOpenAdd(false); // Close modal after success
+      setMainImage(null);
+      setImage2(null);
+      setImage3(null);
+      setImage4(null);
+      setOpenAdd(false);
     } catch (error) {
       console.error("Failed to add product", error);
       setError("Failed to add product. Please try again.");
+    }
+  };
+
+  const imageStates = [
+    { file: MainImage, setFile: setMainImage },
+    { file: image2, setFile: setImage2 },
+    { file: image3, setFile: setImage3 },
+    { file: image4, setFile: setImage4 },
+  ];
+
+  const handleFileChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    index: number
+  ) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      imageStates[index].setFile(file);
     }
   };
 
@@ -155,7 +189,7 @@ const ProductsList = () => {
                 <div
                   style={{
                     display: "flex",
-                    gap: "10px",
+                    gap: "9px",
                     marginLeft: "-35px",
                   }}
                 >
@@ -165,12 +199,21 @@ const ProductsList = () => {
                       style={{
                         position: "relative",
                         width: "80px",
-                        height: "80px",
+                        height: "90px",
                         border: "2px dashed #ccc",
                         borderRadius: "12px",
                         cursor: "pointer",
                         overflow: "hidden",
                         marginTop: "10px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        textAlign: "center",
+                        fontSize: "10px",
+                        backgroundColor:
+                          mode === "dark"
+                            ? theme.palette.background.level1
+                            : "white",
                       }}
                       onClick={() =>
                         document
@@ -195,34 +238,39 @@ const ProductsList = () => {
                           Main
                         </div>
                       )}
-                      {/* <input
+
+                      <input
                         type="file"
                         id={`image-upload-${index}`}
                         accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            const reader = new FileReader();
-                            reader.onloadend = () => {
-                              setImagePreviews((prev) => {
-                                const updated = [...prev];
-                                updated[index] = reader.result as string;
-                                return updated;
-                              });
-                            };
-                            reader.readAsDataURL(file);
-                          }
-                        }}
                         style={{ display: "none" }}
+                        onChange={(e) => handleFileChange(e, index)}
                       />
-                      <img
-                        src={imagePreviews[index]}
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                        }}
-                      /> */}
+
+                      {/* Show image preview or plus icon */}
+                      {imageStates[index].file ? (
+                        <img
+                          src={URL.createObjectURL(imageStates[index].file!)}
+                          alt={`image-${index}`}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                          }}
+                        />
+                      ) : (
+                        <span
+                          style={{
+                            fontSize: "40px",
+                            color: "#aaa",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          +
+                        </span>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -320,9 +368,7 @@ const ProductsList = () => {
                           color: theme.palette.text.primary,
                         }}
                       >
-                        <option value="" disabled selected hidden>
-                          Type
-                        </option>
+                        <option value="">Select type</option>
                         <option value="chair">Chair</option>
                         <option value="drawer">Drawer</option>
                         <option value="sofa">Sofa</option>
@@ -432,7 +478,7 @@ const ProductsList = () => {
               <tr key={product._id}>
                 <td>{index + 1}</td>
                 <td>{product.title}</td>
-                <td>image</td>
+                <td>{product.MainImage}</td>
                 <td>{product.price}$</td>
                 <td>{product.type}</td>
                 <td>
@@ -483,7 +529,7 @@ const ProductsList = () => {
                         <div
                           style={{
                             display: "flex",
-                            gap: "10px",
+                            gap: "9px",
                             marginLeft: "-35px",
                           }}
                         >
@@ -493,12 +539,21 @@ const ProductsList = () => {
                               style={{
                                 position: "relative",
                                 width: "80px",
-                                height: "80px",
+                                height: "90px",
                                 border: "2px dashed #ccc",
                                 borderRadius: "12px",
                                 cursor: "pointer",
                                 overflow: "hidden",
                                 marginTop: "10px",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                textAlign: "center",
+                                fontSize: "10px",
+                                backgroundColor:
+                                  mode === "dark"
+                                    ? theme.palette.background.level1
+                                    : "white",
                               }}
                               onClick={() =>
                                 document
@@ -523,35 +578,41 @@ const ProductsList = () => {
                                   Main
                                 </div>
                               )}
-                              {/* <input
+
+                              <input
                                 type="file"
                                 id={`image-upload-${index}`}
                                 accept="image/*"
-                                onChange={(e) => {
-                                  const file = e.target.files?.[0];
-                                  if (file) {
-                                    const reader = new FileReader();
-                                    reader.onloadend = () => {
-                                      setImagePreviews((prev) => {
-                                        const updated = [...prev];
-                                        updated[index] =
-                                          reader.result as string;
-                                        return updated;
-                                      });
-                                    };
-                                    reader.readAsDataURL(file);
-                                  }
-                                }}
                                 style={{ display: "none" }}
+                                onChange={(e) => handleFileChange(e, index)}
                               />
-                              <img
-                                src={imagePreviews[index]}
-                                style={{
-                                  width: "100%",
-                                  height: "100%",
-                                  objectFit: "cover",
-                                }}
-                              /> */}
+
+                              {/* Show image preview or plus icon */}
+                              {imageStates[index].file ? (
+                                <img
+                                  src={URL.createObjectURL(
+                                    imageStates[index].file!
+                                  )}
+                                  alt={`image-${index}`}
+                                  style={{
+                                    width: "100%",
+                                    height: "100%",
+                                    objectFit: "cover",
+                                  }}
+                                />
+                              ) : (
+                                <span
+                                  style={{
+                                    fontSize: "40px",
+                                    color: "#aaa",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                  }}
+                                >
+                                  +
+                                </span>
+                              )}
                             </div>
                           ))}
                         </div>

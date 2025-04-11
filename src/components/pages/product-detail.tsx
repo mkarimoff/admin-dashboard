@@ -19,7 +19,10 @@ interface Product {
   quantity: number;
   description: string;
   type: string;
-  // image?: string;
+  MainImage: String;
+  image2: String;
+  image3: String;
+  image4: String;
 }
 
 const ProductDetail = () => {
@@ -49,11 +52,11 @@ const ProductDetail = () => {
         <>
           <div style={{ display: "flex", gap: "20px" }}>
             <ImageGallery>
-              <MainImagePlaceholder>Main Image</MainImagePlaceholder>
+              <MainImagePlaceholder>{product.MainImage}</MainImagePlaceholder>
               <ThumbnailRow>
-                <ThumbnailPlaceholder>Image 1</ThumbnailPlaceholder>
-                <ThumbnailPlaceholder>Image 2</ThumbnailPlaceholder>
-                <ThumbnailPlaceholder>Image 3</ThumbnailPlaceholder>
+                <ThumbnailPlaceholder>{product.image2}</ThumbnailPlaceholder>
+                <ThumbnailPlaceholder>{product.image3}</ThumbnailPlaceholder>
+                <ThumbnailPlaceholder>{product.image4}</ThumbnailPlaceholder>
               </ThumbnailRow>
             </ImageGallery>
 
