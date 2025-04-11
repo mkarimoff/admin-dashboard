@@ -10,7 +10,8 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { baseApi } from "../utils/api";
 import { useColorScheme } from "@mui/joy/styles";
-import { useTheme } from "@mui/joy/styles"; // add this if not already
+import { useTheme } from "@mui/joy/styles"; 
+import { toast } from "react-toastify";
 
 interface Product {
   _id: string;
@@ -56,6 +57,7 @@ const ProductsList = () => {
       const response = await axios.get(`${baseApi}/products/getProducts`);
       setProducts(response.data.products);
     } catch (error) {
+      toast.error("Failed to fetch products.");
       console.error("Failed to fetch products", error);
     }
   };
@@ -112,7 +114,9 @@ const ProductsList = () => {
       setImage3(null);
       setImage4(null);
       setOpenAdd(false);
+      toast.success("Product added successfully!");
     } catch (error) {
+      toast.error("Failed to add product.");
       console.error("Failed to add product", error);
       setError("Failed to add product. Please try again.");
     }
@@ -465,7 +469,7 @@ const ProductsList = () => {
           <thead>
             <tr>
               <th style={{ width: "60px" }}>No</th>
-              <th style={{ width: "25%" }}>Title</th>
+              <th style={{ width: "30%" }}>Title</th>
               <th>image</th>
               <th>price</th>
               <th>type</th>
@@ -478,7 +482,19 @@ const ProductsList = () => {
               <tr key={product._id}>
                 <td>{index + 1}</td>
                 <td>{product.title}</td>
-                <td>{product.MainImage}</td>
+                <td>
+                  <img
+                    src={`${baseApi}/${product.MainImage}`}
+                   alt="product image"
+                    style={{
+                      width: "40px",
+                      height: "40px",
+                      objectFit: "cover",
+                      borderRadius: "8px",
+                      border:"solid black 1px"
+                    }}
+                  />
+                </td>
                 <td>{product.price}$</td>
                 <td>{product.type}</td>
                 <td>

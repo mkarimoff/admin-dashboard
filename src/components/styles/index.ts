@@ -55,7 +55,8 @@ export const ProDetailCon = styled.div`
   max-width: 900px;
   margin: auto;
   justify-content: end;
-  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  border-radius: 15px;
+
 
   strong{
    font-weight: 700;

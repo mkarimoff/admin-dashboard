@@ -10,6 +10,8 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom"; // for accessing URL params
 import { baseApi } from "../utils/api";
 import { Button } from "@mui/joy";
+import { toast } from "react-toastify";
+import { useTheme } from "@mui/joy/styles";
 
 interface Product {
   _id: string;
@@ -26,6 +28,7 @@ interface Product {
 }
 
 const ProductDetail = () => {
+  const theme = useTheme();
   const { id } = useParams(); // get product ID from URL
   const [product, setProduct] = useState<Product | null>(null);
 
@@ -46,17 +49,77 @@ const ProductDetail = () => {
     }
   };
 
+  const fetchProducts = async () => {
+    try {
+      const response = await axios.get(`${baseApi}/products/getProducts`);
+      setProduct(response.data.products);
+      navigate("/products-list");
+      toast.success("Product deleted successfully!");
+    } catch (error) {
+      toast.error("Failed to fetch products.");
+      console.error("Failed to fetch products", error);
+    }
+  };
+
+  const deleteProduct = async (id: string) => {
+    try {
+      await axios.delete(`${baseApi}/products/delete/${id}`);
+      fetchProducts();
+    } catch (error) {
+      toast.error("Failed to delete product.");
+      console.error("Failed to delete product", error);
+    }
+  };
+
   return (
-    <ProDetailCon>
+    <ProDetailCon
+  style={{
+    background:
+      theme.palette.mode === "light"
+        ? "#F5F5F5"
+        : "#31323383", // your custom dark background
+    color: theme.palette.text.primary,
+    boxShadow:
+      theme.palette.mode === "light"
+        ? "rgba(0, 0, 0, 0.35) 0px 5px 15px"
+        : "rgba(255, 255, 255, 0.777) 0px 5px 15px",
+  }}
+>
+
       {product ? (
         <>
           <div style={{ display: "flex", gap: "20px" }}>
             <ImageGallery>
-              <MainImagePlaceholder>{product.MainImage}</MainImagePlaceholder>
+              <MainImagePlaceholder>
+                <img
+                  src={`${baseApi}/${product.MainImage}`}
+                  alt="Main image"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    borderRadius: "8px",
+                  }}
+                />
+              </MainImagePlaceholder>
+
               <ThumbnailRow>
-                <ThumbnailPlaceholder>{product.image2}</ThumbnailPlaceholder>
-                <ThumbnailPlaceholder>{product.image3}</ThumbnailPlaceholder>
-                <ThumbnailPlaceholder>{product.image4}</ThumbnailPlaceholder>
+                {[product.image2, product.image3, product.image4].map(
+                  (img, idx) => (
+                    <ThumbnailPlaceholder key={idx}>
+                      <img
+                        src={`${baseApi}/${img}`}
+                        alt={`Product image`}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          borderRadius: "6px",
+                        }}
+                      />
+                    </ThumbnailPlaceholder>
+                  )
+                )}
               </ThumbnailRow>
             </ImageGallery>
 
@@ -84,8 +147,12 @@ const ProductDetail = () => {
             </div>
           </div>
           <div className="buttons-wrap">
-            <Button color="success" onClick={() => navigate(-1)}>Go Back</Button>
-            <Button color="danger">Delete</Button>
+            <Button color="success" onClick={() => navigate(-1)}>
+              Go Back
+            </Button>
+            <Button color="danger" onClick={() => deleteProduct(product._id)}>
+              Delete
+            </Button>
           </div>
         </>
       ) : (
