@@ -10,7 +10,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { baseApi } from "../utils/api";
 import { useColorScheme } from "@mui/joy/styles";
-import { useTheme } from "@mui/joy/styles"; 
+import { useTheme } from "@mui/joy/styles";
 import { toast } from "react-toastify";
 
 interface Product {
@@ -27,6 +27,11 @@ interface Product {
   image4: String;
 }
 
+interface ImageState {
+  file: File | null;
+  preview: string; // The preview property to store image URL or default image URL
+}
+
 const ProductsList = () => {
   const theme = useTheme();
   const { mode } = useColorScheme();
@@ -36,6 +41,7 @@ const ProductsList = () => {
   const handleCloseEdit = () => setOpenEdit(false);
 
   const [products, setProducts] = useState<Product[]>([]);
+  const [productId, setProductId] = useState<string>("");
   const [title, setTitle] = useState("");
   const [price, setPrice] = useState<number | "">("");
   const [discount, setDiscount] = useState<number | "">("");
@@ -122,12 +128,87 @@ const ProductsList = () => {
     }
   };
 
-  const imageStates = [
-    { file: MainImage, setFile: setMainImage },
-    { file: image2, setFile: setImage2 },
-    { file: image3, setFile: setImage3 },
-    { file: image4, setFile: setImage4 },
-  ];
+  const [imageStates, setImageStates] = useState<ImageState[]>([
+    { file: null, preview: "" },
+    { file: null, preview: "" },
+    { file: null, preview: "" },
+    { file: null, preview: "" },
+  ]);
+
+  const [editData, setEditData] = useState({
+    title: "",
+    price: "" as string | number,
+    description: "",
+    discount: "" as string | number,
+    quantity: "" as string | number,
+    type: "",
+  });
+
+  const handleOpenEdit = (product: Product) => {
+    setProductId(product._id);
+    setEditData({
+      title: product.title,
+      price: product.price,
+      description: product.description,
+      discount: product.discount,
+      quantity: product.quantity,
+      type: product.type,
+    });
+
+    setImageStates([
+      { file: null, preview: `${baseApi}/${product.MainImage}` },
+      { file: null, preview: `${baseApi}/${product.image2}` },
+      { file: null, preview: `${baseApi}/${product.image3}` },
+      { file: null, preview: `${baseApi}/${product.image4}` },
+    ]);
+
+    setOpenEdit(true); // Open the edit modal
+  };
+
+  const handleSaveEdit = async () => {
+    const formData = new FormData();
+
+    formData.append("title", editData.title);
+    formData.append("price", editData.price ? editData.price.toString() : "0");
+    formData.append(
+      "quantity",
+      editData.quantity ? editData.quantity.toString() : "0"
+    );
+    formData.append(
+      "discount",
+      editData.discount ? editData.discount.toString() : "0"
+    );
+    formData.append("description", editData.description);
+    formData.append("type", editData.type);
+
+    console.log("Saving product with state:", editData);
+
+    if (imageStates[0].file) formData.append("MainImage", imageStates[0].file);
+    if (imageStates[1].file) formData.append("image2", imageStates[1].file);
+    if (imageStates[2].file) formData.append("image3", imageStates[2].file);
+    if (imageStates[3].file) formData.append("image4", imageStates[3].file);
+
+    try {
+      const { data } = await axios.put(
+        `${baseApi}/products/update/${productId}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      if (data.success) {
+        toast.success("Product updated successfully!");
+        fetchProducts();
+        setOpenEdit(false);
+      }
+    } catch (error) {
+      console.error("Update failed:", error);
+      toast.error("Update failed");
+    }
+  };
 
   const handleFileChange = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -135,7 +216,14 @@ const ProductsList = () => {
   ) => {
     const file = e.target.files?.[0];
     if (file) {
-      imageStates[index].setFile(file);
+      const newImageStates = [...imageStates];
+      newImageStates[index] = { file, preview: URL.createObjectURL(file) };
+      setImageStates(newImageStates);
+
+      if (index === 0) setMainImage(file); // Set MainImage specifically
+      if (index === 1) setImage2(file);
+      if (index === 2) setImage3(file);
+      if (index === 3) setImage4(file);
     }
   };
 
@@ -299,11 +387,10 @@ const ProductsList = () => {
                         type="text"
                         placeholder="Price"
                         value={price}
-                        onChange={(e) =>
-                          setPrice(
-                            e.target.value ? parseFloat(e.target.value) : ""
-                          )
-                        }
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value);
+                          setPrice(isNaN(val) ? 0 : val);
+                        }}
                         style={{
                           background:
                             theme.palette.mode === "light"
@@ -328,14 +415,13 @@ const ProductsList = () => {
                     </div>
                     <div className="inputs-wrap">
                       <input
-                        type="number"
+                        type="text"
                         placeholder="Discount"
                         value={discount}
-                        onChange={(e) =>
-                          setDiscount(
-                            e.target.value ? parseFloat(e.target.value) : ""
-                          )
-                        }
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value);
+                          setDiscount(isNaN(val) ? 0 : val);
+                        }}
                         style={{
                           background:
                             theme.palette.mode === "light"
@@ -345,14 +431,13 @@ const ProductsList = () => {
                         }}
                       />
                       <input
-                        type="number"
+                        type="text"
                         placeholder="Quantity"
                         value={quantity}
-                        onChange={(e) =>
-                          setQuantity(
-                            e.target.value ? parseFloat(e.target.value) : ""
-                          )
-                        }
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value);
+                          setQuantity(isNaN(val) ? 0 : val);
+                        }}
                         style={{
                           background:
                             theme.palette.mode === "light"
@@ -361,6 +446,7 @@ const ProductsList = () => {
                           color: theme.palette.text.primary,
                         }}
                       />
+
                       <select
                         value={type}
                         onChange={(e) => setType(e.target.value)}
@@ -481,28 +567,33 @@ const ProductsList = () => {
             {products.map((product, index) => (
               <tr key={product._id}>
                 <td>{index + 1}</td>
-                <td>{product.title}</td>
+                <td>
+                  {product.title.charAt(0).toUpperCase() +
+                    product.title.slice(1)}
+                </td>
                 <td>
                   <img
                     src={`${baseApi}/${product.MainImage}`}
-                   alt="product image"
+                    alt="product image"
                     style={{
                       width: "40px",
                       height: "40px",
                       objectFit: "cover",
                       borderRadius: "8px",
-                      border:"solid black 1px"
+                      border: "solid black 1px",
                     }}
                   />
                 </td>
                 <td>{product.price}$</td>
-                <td>{product.type}</td>
+                <td>
+                  {product.type.charAt(0).toUpperCase() + product.type.slice(1)}
+                </td>
                 <td>
                   <div>
                     <Typography
                       color="primary"
                       sx={{ cursor: "pointer" }}
-                      onClick={() => setOpenEdit(true)}
+                      onClick={() => handleOpenEdit(product)}
                     >
                       Edit
                     </Typography>
@@ -603,12 +694,16 @@ const ProductsList = () => {
                                 onChange={(e) => handleFileChange(e, index)}
                               />
 
-                              {/* Show image preview or plus icon */}
-                              {imageStates[index].file ? (
+                              {imageStates[index].file ||
+                              imageStates[index].preview ? (
                                 <img
-                                  src={URL.createObjectURL(
-                                    imageStates[index].file!
-                                  )}
+                                  src={
+                                    imageStates[index].file
+                                      ? URL.createObjectURL(
+                                          imageStates[index].file!
+                                        )
+                                      : imageStates[index].preview
+                                  }
                                   alt={`image-${index}`}
                                   style={{
                                     width: "100%",
@@ -639,6 +734,13 @@ const ProductsList = () => {
                               <input
                                 type="text"
                                 placeholder="Title"
+                                value={editData.title}
+                                onChange={(e) =>
+                                  setEditData({
+                                    ...editData,
+                                    title: e.target.value,
+                                  })
+                                }
                                 style={{
                                   background:
                                     theme.palette.mode === "light"
@@ -647,9 +749,18 @@ const ProductsList = () => {
                                   color: theme.palette.text.primary,
                                 }}
                               />
+
                               <input
                                 type="text"
                                 placeholder="Price"
+                                value={editData.price}
+                                onChange={(e) => {
+                                  const val = parseFloat(e.target.value);
+                                  setEditData({
+                                    ...editData,
+                                    price: isNaN(val) ? 0 : val,
+                                  });
+                                }}
                                 style={{
                                   background:
                                     theme.palette.mode === "light"
@@ -658,9 +769,17 @@ const ProductsList = () => {
                                   color: theme.palette.text.primary,
                                 }}
                               />
+
                               <input
                                 type="text"
                                 placeholder="Description"
+                                value={editData.description}
+                                onChange={(e) =>
+                                  setEditData({
+                                    ...editData,
+                                    description: e.target.value,
+                                  })
+                                }
                                 style={{
                                   background:
                                     theme.palette.mode === "light"
@@ -670,10 +789,19 @@ const ProductsList = () => {
                                 }}
                               />
                             </div>
+
                             <div className="inputs-wrap">
                               <input
-                                type="number"
+                                type="text"
                                 placeholder="Discount"
+                                value={editData.discount}
+                                onChange={(e) => {
+                                  const val = parseInt(e.target.value);
+                                  setEditData({
+                                    ...editData,
+                                    discount: isNaN(val) ? 0 : val,
+                                  });
+                                }}
                                 style={{
                                   background:
                                     theme.palette.mode === "light"
@@ -682,9 +810,18 @@ const ProductsList = () => {
                                   color: theme.palette.text.primary,
                                 }}
                               />
+
                               <input
-                                type="number"
+                                type="text"
                                 placeholder="Quantity"
+                                value={editData.quantity}
+                                onChange={(e) => {
+                                  const val = parseInt(e.target.value);
+                                  setEditData({
+                                    ...editData,
+                                    quantity: isNaN(val) ? 0 : val,
+                                  });
+                                }}
                                 style={{
                                   background:
                                     theme.palette.mode === "light"
@@ -693,7 +830,15 @@ const ProductsList = () => {
                                   color: theme.palette.text.primary,
                                 }}
                               />
+
                               <select
+                                value={editData.type}
+                                onChange={(e) =>
+                                  setEditData({
+                                    ...editData,
+                                    type: e.target.value,
+                                  })
+                                }
                                 style={{
                                   background:
                                     theme.palette.mode === "light"
@@ -702,7 +847,7 @@ const ProductsList = () => {
                                   color: theme.palette.text.primary,
                                 }}
                               >
-                                <option value="" disabled selected hidden>
+                                <option value="" disabled hidden>
                                   Type
                                 </option>
                                 <option value="chair">Chair</option>
@@ -725,7 +870,7 @@ const ProductsList = () => {
                           <Button color="success" onClick={handleCloseEdit}>
                             Cancel
                           </Button>
-                          <Button>Edit</Button>
+                          <Button onClick={handleSaveEdit}>Save</Button>
                         </Typography>
                       </ModalDialog>
                     </Modal>

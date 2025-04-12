@@ -84,7 +84,7 @@ export default function Sidebar() {
           onClick={() => closeSidebar()}
         />
         <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-            <img src={logo} alt="logo" style={{width:'30px',background:'none'}} />
+            <img src={logo} alt="logo" style={{width:'30px'}} />
           <Typography level="title-lg">Furnimall.</Typography>
           <ColorSchemeToggle sx={{ ml: "auto" }} />
         </Box>

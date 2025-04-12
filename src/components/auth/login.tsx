@@ -18,7 +18,7 @@ import Typography from '@mui/joy/Typography';
 import Stack from '@mui/joy/Stack';
 import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded';
 import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded';
-import BadgeRoundedIcon from '@mui/icons-material/BadgeRounded';
+import logo from "../../assets/logo.svg"
 import GoogleIcon from './GoogleIcon'; // Make sure this exists
 
 interface FormElements extends HTMLFormControlsCollection {
@@ -99,11 +99,9 @@ export default function LoginComponent() {
             component="header"
             sx={{ py: 3, display: 'flex', justifyContent: 'space-between' }}
           >
-            <Box sx={{ gap: 2, display: 'flex', alignItems: 'center' }}>
-              <IconButton variant="soft" color="primary" size="sm">
-                <BadgeRoundedIcon />
-              </IconButton>
-              <Typography level="title-lg">Company logo</Typography>
+            <Box sx={{ gap: 1, display: 'flex', alignItems: 'center' }}>
+              <img src={logo} alt="logo" style={{width:'30px'}} />
+              <Typography level="title-lg">Furnimall.</Typography>
             </Box>
             <ColorSchemeToggle />
           </Box>
@@ -203,7 +201,7 @@ export default function LoginComponent() {
           </Box>
           <Box component="footer" sx={{ py: 3 }}>
             <Typography level="body-xs" sx={{ textAlign: 'center' }}>
-              © Your company {new Date().getFullYear()}
+              © Furnimall. {new Date().getFullYear()}
             </Typography>
           </Box>
         </Box>
