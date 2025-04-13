@@ -33,6 +33,7 @@ interface ImageState {
 }
 
 const ProductsList = () => {
+  
   const theme = useTheme();
   const { mode } = useColorScheme();
   const [openAdd, setOpenAdd] = React.useState(false);
