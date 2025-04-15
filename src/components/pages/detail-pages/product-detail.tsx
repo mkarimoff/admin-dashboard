@@ -5,10 +5,10 @@ import {
   MainImagePlaceholder,
   ThumbnailRow,
   ThumbnailPlaceholder,
-} from "../styles";
+} from "../../styles";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom"; // for accessing URL params
-import { baseApi } from "../utils/api";
+import { baseApi } from "../../utils/api";
 import { Button } from "@mui/joy";
 import { toast } from "react-toastify";
 import { useTheme } from "@mui/joy/styles";
@@ -25,11 +25,12 @@ interface Product {
   image2: String;
   image3: String;
   image4: String;
+  createdAt: string;
 }
 
 const ProductDetail = () => {
   const theme = useTheme();
-  const { id } = useParams(); // get product ID from URL
+  const { id } = useParams();
   const [product, setProduct] = useState<Product | null>(null);
 
   const navigate = useNavigate();
@@ -71,21 +72,22 @@ const ProductDetail = () => {
     }
   };
 
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString() + " " + date.toLocaleTimeString();
+  };
+
   return (
     <ProDetailCon
-  style={{
-    background:
-      theme.palette.mode === "light"
-        ? "#F5F5F5"
-        : "#31323383", // your custom dark background
-    color: theme.palette.text.primary,
-    boxShadow:
-      theme.palette.mode === "light"
-        ? "rgba(0, 0, 0, 0.35) 0px 5px 15px"
-        : "rgba(255, 255, 255, 0.777) 0px 5px 15px",
-  }}
->
-
+      style={{
+        background: theme.palette.mode === "light" ? "#fefcfcd5" : "#31323383",
+        color: theme.palette.text.primary,
+        boxShadow:
+          theme.palette.mode === "light"
+            ? "rgba(0, 0, 0, 0.35) 0px 5px 15px"
+            : "rgba(255, 255, 255, 0.777) 0px 5px 15px",
+      }}
+    >
       {product ? (
         <>
           <div style={{ display: "flex", gap: "20px" }}>
@@ -129,6 +131,9 @@ const ProductDetail = () => {
                 {product.title}
               </h2>
               <p>
+                <strong>Registered At:</strong> {formatDate(product.createdAt)}
+              </p>
+              <p>
                 <strong>Price:</strong> ${product.price}
               </p>
               <p>
@@ -156,7 +161,7 @@ const ProductDetail = () => {
           </div>
         </>
       ) : (
-        <p>Loading product...</p>
+        <p>Loading product's details...</p>
       )}
     </ProDetailCon>
   );
