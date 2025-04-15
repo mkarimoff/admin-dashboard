@@ -55,19 +55,29 @@ export const ProDetailCon = styled.div`
   max-width: 900px;
   margin: auto;
   justify-content: end;
-  border-radius: 15px;
+  border-radius: 8px;
 
-
-  strong{
-   font-weight: 700;
+  strong {
+    font-weight: 700;
   }
-  .desc{
+  .desc {
     width: 300px;
   }
-  .buttons-wrap{
+  .buttons-wrap {
     display: flex;
     justify-content: end;
     gap: 20px;
+  }
+  p {
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 190%;
+  }
+  b {
+    font-family: Jost;
+    font-size: 19px;
+    font-style: normal;
+    font-weight: 500;
   }
 `;
 

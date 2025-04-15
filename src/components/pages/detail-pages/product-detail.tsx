@@ -9,7 +9,7 @@ import {
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom"; // for accessing URL params
 import { baseApi } from "../../utils/api";
-import { Button } from "@mui/joy";
+import { Button, Divider } from "@mui/joy";
 import { toast } from "react-toastify";
 import { useTheme } from "@mui/joy/styles";
 
@@ -77,6 +77,17 @@ const ProductDetail = () => {
     return date.toLocaleDateString() + " " + date.toLocaleTimeString();
   };
 
+  const capitalizeWords = (str: string) => {
+    return str
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
+  };
+
+  const capitalize = (str: string) => {
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+  };
+
   return (
     <ProDetailCon
       style={{
@@ -127,9 +138,10 @@ const ProductDetail = () => {
 
             <div>
               <h2>
-                <strong>Title:</strong>
-                {product.title}
+                <strong>Title: </strong>
+                {capitalizeWords(product.title)}
               </h2>
+              <Divider />
               <p>
                 <strong>Registered At:</strong> {formatDate(product.createdAt)}
               </p>
@@ -143,11 +155,11 @@ const ProductDetail = () => {
                 <strong>Quantity:</strong> {product.quantity}
               </p>
               <p>
-                <strong>Type:</strong> {product.type}
+                <strong>Type:</strong> {capitalize(product.type)}
               </p>
               <p className="desc">
-                <strong>Description:</strong>
-                {product.description}
+                <strong>Description: </strong>
+                {capitalize (product.description)}
               </p>
             </div>
           </div>

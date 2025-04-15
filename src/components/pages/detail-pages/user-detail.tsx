@@ -3,7 +3,7 @@ import { ProDetailCon } from "../../styles";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { baseApi } from "../../utils/api";
-import { Button } from "@mui/joy";
+import { Button, Divider } from "@mui/joy";
 import { toast } from "react-toastify";
 import { useTheme } from "@mui/joy/styles";
 
@@ -75,8 +75,8 @@ const UsersDetail = () => {
           theme.palette.mode === "light"
             ? "rgba(0, 0, 0, 0.35) 0px 5px 15px"
             : "rgba(255, 255, 255, 0.777) 0px 5px 15px",
-        padding: "2rem",
-        borderRadius: "12px",
+        padding: "2.5rem",
+        borderRadius: "8px",
       }}
     >
       {user ? (
@@ -84,7 +84,9 @@ const UsersDetail = () => {
           <div
             style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
           >
-            <h2>User's Details</h2>
+            <h2>User's Details <br /> <br />
+            <Divider />
+            </h2>
             <div
               style={{
                 display: "grid",
@@ -96,31 +98,31 @@ const UsersDetail = () => {
               <div>
                 <strong>First Name:</strong>
               </div>
-              <div>{capitalize(user.firstName)}</div>
+              <b>{capitalize(user.firstName)}</b>
 
               <div>
                 <strong>Last Name:</strong>
               </div>
-              <div>{capitalize(user.lastName)}</div>
+              <b>{capitalize(user.lastName)}</b>
 
               <div>
                 <strong>Email:</strong>
               </div>
-              <div>{user.email}</div>
+              <b>{user.email}</b>
 
               <div>
                 <strong>Address:</strong>
               </div>
-              <div>{capitalizeWords(user.address)}</div>
+              <b>{capitalizeWords(user.address)}</b>
 
               <div>
                 <strong>Number:</strong>
               </div>
-              <div>{user.number}</div>
+              <b>{user.number}</b>
               <div>
                 <strong>Registered At:</strong>
               </div>
-              <div>{formatDate(user.createdAt)}</div>
+              <b>{formatDate(user.createdAt)}</b>
             </div>
 
             <div
