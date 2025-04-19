@@ -67,7 +67,6 @@ export default function LoginComponent() {
 
       const { token, user } = response.data;
 
-      // Check role before proceeding
       if (user.role !== "admin") {
         alert("Access denied: Only admin can access this dashboard");
         return;
@@ -76,7 +75,6 @@ export default function LoginComponent() {
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
 
-      console.log("Login successful", response.data);
       navigate("/products-list");
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {

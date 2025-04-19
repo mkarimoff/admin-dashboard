@@ -66,6 +66,12 @@ const UsersDetail = () => {
       .join(" ");
   };
 
+  const formatPhoneNumber = (phone: string) => {
+    const cleaned = phone.replace(/\D/g, "");
+    const match = cleaned.match(/^(\d{3})(\d{4})(\d{4})$/);
+    return match ? `${match[1]}-${match[2]}-${match[3]}` : phone;
+  };
+
   return (
     <ProDetailCon
       style={{
@@ -118,7 +124,7 @@ const UsersDetail = () => {
               <div>
                 <strong>Number:</strong>
               </div>
-              <b>{user.number}</b>
+              <b>{formatPhoneNumber(String(user.number))}</b>
               <div>
                 <strong>Registered At:</strong>
               </div>

@@ -54,6 +54,12 @@ const UsersList = () => {
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
   };
 
+  const formatPhoneNumber = (phone: string) => {
+    const cleaned = phone.replace(/\D/g, "");
+    const match = cleaned.match(/^(\d{3})(\d{4})(\d{4})$/);
+    return match ? `${match[1]}-${match[2]}-${match[3]}` : phone;
+  };
+
   return (
     <Container>
       <Box
@@ -113,7 +119,7 @@ const UsersList = () => {
                     {capitalize(user.firstName)} {capitalize(user.lastName)}
                   </td>
                   <td>{user.email}</td>
-                  <td>{user.number}</td>
+                  <td>{formatPhoneNumber (user.number)}</td>
                   <td>
                     <Link
                       to={`/user-detail/${user._id}`}

@@ -147,19 +147,19 @@ export default function Sidebar() {
             </Link>
 
             <Link
-              to={"/messages"}
+              to={"/emails"}
               style={{ textDecoration: "none" }}
             >
               <ListItemButton
                 sx={{
-                  backgroundColor: isActive("/messages")
+                  backgroundColor: isActive("/email")
                     ? "#3d87db4a"
                     : "transparent",
                 }}
               >
                 <QuestionAnswerRoundedIcon />
                 <ListItemContent>
-                  <Typography level="title-sm">Messages</Typography>
+                  <Typography level="title-sm">Emails</Typography>
                 </ListItemContent>
                 <Chip size="sm" color="primary" variant="solid">
                   4
