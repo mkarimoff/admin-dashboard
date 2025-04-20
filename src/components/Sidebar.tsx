@@ -18,17 +18,32 @@ import { closeSidebar } from "../utils";
 import Modal from "@mui/joy/Modal";
 import Button from "@mui/joy/Button";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import logo from "../assets/logo.svg"
+import logo from "../assets/logo.svg";
+import axios from "axios";
 
 export default function Sidebar() {
+  const [messageCount, setMessageCount] = React.useState<number>(0);
   const location = useLocation();
-  const navigate = useNavigate(); // ✅ FIXED: moved useNavigate inside the component
+  const navigate = useNavigate();
   const [open, setOpen] = React.useState<boolean>(false);
-
   const isActive = (path: any) => location.pathname === path;
   const handleLogout = () => {
-    navigate("/"); // ✅ clear logout handler
+    navigate("/");
   };
+
+  React.useEffect(() => {
+    const fetchMessageCount = async () => {
+      try {
+        const res = await axios.get(
+          "http://localhost:5050/dev-api/messages/allMessages"
+        );
+        setMessageCount(res.data.messages.length);
+      } catch (error) {
+      }
+    };
+
+    fetchMessageCount();
+  }, []);
 
   return (
     <>
@@ -84,7 +99,7 @@ export default function Sidebar() {
           onClick={() => closeSidebar()}
         />
         <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-            <img src={logo} alt="logo" style={{width:'30px'}} />
+          <img src={logo} alt="logo" style={{ width: "30px" }} />
           <Typography level="title-lg">Furnimall.</Typography>
           <ColorSchemeToggle sx={{ ml: "auto" }} />
         </Box>
@@ -109,11 +124,7 @@ export default function Sidebar() {
               "--ListItem-radius": (theme) => theme.vars.radius.sm,
             }}
           >
-
-            <Link
-              to={"/products-list"}
-              style={{ textDecoration: "none" }}
-            >
+            <Link to={"/products-list"} style={{ textDecoration: "none" }}>
               <ListItemButton
                 sx={{
                   backgroundColor: isActive("/products-list")
@@ -128,10 +139,7 @@ export default function Sidebar() {
               </ListItemButton>
             </Link>
 
-            <Link
-              to={"/users-list"}
-              style={{ textDecoration: "none" }}
-            >
+            <Link to={"/users-list"} style={{ textDecoration: "none" }}>
               <ListItemButton
                 sx={{
                   backgroundColor: isActive("/users-list")
@@ -146,10 +154,7 @@ export default function Sidebar() {
               </ListItemButton>
             </Link>
 
-            <Link
-              to={"/emails"}
-              style={{ textDecoration: "none" }}
-            >
+            <Link to={"/emails"} style={{ textDecoration: "none" }}>
               <ListItemButton
                 sx={{
                   backgroundColor: isActive("/email")
@@ -162,11 +167,10 @@ export default function Sidebar() {
                   <Typography level="title-sm">Emails</Typography>
                 </ListItemContent>
                 <Chip size="sm" color="primary" variant="solid">
-                  4
+                  {messageCount}
                 </Chip>
               </ListItemButton>
             </Link>
-            
           </List>
         </Box>
         <Divider />
