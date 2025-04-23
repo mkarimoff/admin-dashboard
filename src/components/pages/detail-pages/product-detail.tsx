@@ -7,7 +7,7 @@ import {
   ThumbnailPlaceholder,
 } from "../../styles";
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom"; // for accessing URL params
+import { useNavigate, useParams } from "react-router-dom";
 import { baseApi } from "../../utils/api";
 import { Button, Divider } from "@mui/joy";
 import { toast } from "react-toastify";
@@ -21,10 +21,10 @@ interface Product {
   quantity: number;
   description: string;
   type: string;
-  MainImage: String;
-  image2: String;
-  image3: String;
-  image4: String;
+  MainImage: string; // Changed to lowercase 'string' for consistency
+  image2: string;
+  image3: string;
+  image4: string;
   createdAt: string;
 }
 
@@ -32,7 +32,6 @@ const ProductDetail = () => {
   const theme = useTheme();
   const { id } = useParams();
   const [product, setProduct] = useState<Product | null>(null);
-
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -105,7 +104,7 @@ const ProductDetail = () => {
             <ImageGallery>
               <MainImagePlaceholder>
                 <img
-                  src={`${baseApi}/${product.MainImage}`}
+                  src={`https://s3.twcstorage.ru/${product.MainImage}`}
                   alt="Main image"
                   style={{
                     width: "100%",
@@ -113,6 +112,9 @@ const ProductDetail = () => {
                     objectFit: "cover",
                     borderRadius: "8px",
                   }}
+                  onError={(e) =>
+                    console.log(`Error loading main image: ${product.MainImage}`, e)
+                  }
                 />
               </MainImagePlaceholder>
 
@@ -121,14 +123,17 @@ const ProductDetail = () => {
                   (img, idx) => (
                     <ThumbnailPlaceholder key={idx}>
                       <img
-                        src={`${baseApi}/${img}`}
-                        alt={`Product image`}
+                        src={`https://s3.twcstorage.ru/${img}`}
+                        alt={`Product image ${idx + 2}`}
                         style={{
                           width: "100%",
                           height: "100%",
                           objectFit: "cover",
                           borderRadius: "6px",
                         }}
+                        onError={(e) =>
+                          console.log(`Error loading image ${img}`, e)
+                        }
                       />
                     </ThumbnailPlaceholder>
                   )
@@ -159,7 +164,7 @@ const ProductDetail = () => {
               </p>
               <p className="desc">
                 <strong>Description: </strong>
-                {capitalize (product.description)}
+                {capitalize(product.description)}
               </p>
             </div>
           </div>
