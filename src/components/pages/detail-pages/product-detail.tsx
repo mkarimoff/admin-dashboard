@@ -9,7 +9,7 @@ import {
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { baseApi } from "../../utils/api";
-import { Button, Divider } from "@mui/joy";
+import { Button, Divider, CircularProgress } from "@mui/joy";
 import { toast } from "react-toastify";
 import { useTheme } from "@mui/joy/styles";
 
@@ -21,7 +21,7 @@ interface Product {
   quantity: number;
   description: string;
   type: string;
-  MainImage: string; // Changed to lowercase 'string' for consistency
+  MainImage: string;
   image2: string;
   image3: string;
   image4: string;
@@ -32,6 +32,9 @@ const ProductDetail = () => {
   const theme = useTheme();
   const { id } = useParams();
   const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [images, setImages] = useState<(string | null)[]>([]);
+  const [mainImageIndex, setMainImageIndex] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -40,10 +43,15 @@ const ProductDetail = () => {
 
   const fetchProductById = async (productId: string) => {
     try {
-      const response = await axios.get(
-        `${baseApi}/products/getProduct/${productId}`
-      );
-      setProduct(response.data.product);
+      const response = await axios.get(`${baseApi}/products/getProduct/${productId}`);
+      const prod: Product = response.data.product;
+      setProduct(prod);
+      setImages([
+        prod.MainImage,
+        prod.image2 || null,
+        prod.image3 || null,
+        prod.image4 || null,
+      ]);
     } catch (error) {
       console.error("Failed to fetch product by ID", error);
     }
@@ -51,8 +59,7 @@ const ProductDetail = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await axios.get(`${baseApi}/products/getProducts`);
-      setProduct(response.data.products);
+      await axios.get(`${baseApi}/products/getProducts`);
       navigate("/products-list");
       toast.success("Product deleted successfully!");
     } catch (error) {
@@ -62,13 +69,20 @@ const ProductDetail = () => {
   };
 
   const deleteProduct = async (id: string) => {
+    setLoading(true);
     try {
       await axios.delete(`${baseApi}/products/delete/${id}`);
       fetchProducts();
     } catch (error) {
       toast.error("Failed to delete product.");
       console.error("Failed to delete product", error);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const handleThumbnailClick = (index: number) => {
+    setMainImageIndex(index);
   };
 
   const formatDate = (dateString: string) => {
@@ -102,42 +116,72 @@ const ProductDetail = () => {
         <>
           <div style={{ display: "flex", gap: "20px" }}>
             <ImageGallery>
-              <MainImagePlaceholder>
-                <img
-                  src={`https://s3.twcstorage.ru/${product.MainImage}`}
-                  alt="Main image"
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    borderRadius: "8px",
-                  }}
-                  onError={(e) =>
-                    console.log(`Error loading main image: ${product.MainImage}`, e)
-                  }
-                />
+              <MainImagePlaceholder style={{ width: "340px", height: "400px" }}>
+                {images[mainImageIndex] ? (
+                  <img
+                    src={images[mainImageIndex] as string}
+                    alt="Main image"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      borderRadius: "8px",
+                    }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      backgroundColor: "#f0f0f0",
+                      color: "#999",
+                      fontStyle: "italic",
+                    }}
+                  >
+                    No image
+                  </div>
+                )}
               </MainImagePlaceholder>
 
               <ThumbnailRow>
-                {[product.image2, product.image3, product.image4].map(
-                  (img, idx) => (
-                    <ThumbnailPlaceholder key={idx}>
+                {images.slice(1).map((img, idx) => (
+                  <ThumbnailPlaceholder
+                    key={idx}
+                    style={{
+                      width: "102px",
+                      height: "100px",
+                      cursor: img ? "pointer" : "default",
+                      border: "1px solid #ccc",
+                      borderRadius: "6px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      backgroundColor: img ? "#fff" : "#f0f0f0",
+                      color: "#999",
+                      fontSize: "12px",
+                      fontStyle: "italic",
+                    }}
+                    onClick={() => img && handleThumbnailClick(idx + 1)}
+                  >
+                    {img ? (
                       <img
-                        src={`https://s3.twcstorage.ru/${img}`}
-                        alt={`Product image ${idx + 2}`}
+                        src={img}
+                        alt={`Thumbnail ${idx + 2}`}
                         style={{
                           width: "100%",
                           height: "100%",
                           objectFit: "cover",
                           borderRadius: "6px",
                         }}
-                        onError={(e) =>
-                          console.log(`Error loading image ${img}`, e)
-                        }
                       />
-                    </ThumbnailPlaceholder>
-                  )
-                )}
+                    ) : (
+                      "No image"
+                    )}
+                  </ThumbnailPlaceholder>
+                ))}
               </ThumbnailRow>
             </ImageGallery>
 
@@ -168,12 +212,21 @@ const ProductDetail = () => {
               </p>
             </div>
           </div>
+
           <div className="buttons-wrap">
             <Button color="success" onClick={() => navigate(-1)}>
               Go Back
             </Button>
-            <Button color="danger" onClick={() => deleteProduct(product._id)}>
-              Delete
+            <Button
+              color="danger"
+              onClick={() => deleteProduct(product._id)}
+              disabled={loading}
+            >
+              {loading ? (
+                <CircularProgress sx={{ marginRight: "10px" }} />
+              ) : (
+                "Delete"
+              )}
             </Button>
           </div>
         </>

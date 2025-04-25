@@ -77,9 +77,8 @@ export default function EmailLists() {
       <List
         sx={{
           boxShadow: "sm",
-          height: "100%",
           width: "500px",
-          maxHeight: "800px", 
+          maxHeight: "calc(104vh - 100px)",
           overflowY: "auto", 
           [`& .${listItemButtonClasses.root}.${listItemButtonClasses.selected}`]: {
             borderLeft: "2px solid",

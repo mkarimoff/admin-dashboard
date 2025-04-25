@@ -1,6 +1,14 @@
 import Table from "@mui/joy/Table";
 import Sheet from "@mui/joy/Sheet";
-import { Box, Button, Input, Modal, ModalDialog, Typography } from "@mui/joy";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Input,
+  Modal,
+  ModalDialog,
+  Typography,
+} from "@mui/joy";
 import Select, { selectClasses } from "@mui/joy/Select";
 import Option from "@mui/joy/Option";
 import KeyboardArrowDown from "@mui/icons-material/KeyboardArrowDown";
@@ -21,15 +29,15 @@ interface Product {
   quantity: number;
   description: string;
   type: string;
-  MainImage: string;  
-  image2: string;     
-  image3: string;  
-  image4: string;  
+  MainImage: string;
+  image2: string;
+  image3: string;
+  image4: string;
 }
 
 interface ImageState {
   file: File | null;
-  preview: string; 
+  preview: string;
 }
 
 const ProductsList = () => {
@@ -56,37 +64,28 @@ const ProductsList = () => {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<string | null>(null);
   const [priceFilter, setPriceFilter] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [imgLoading, setImgLoading] = useState<{ [key: string]: boolean }>({});
+
 
   useEffect(() => {
     fetchProducts();
   }, []);
-  
+
   const fetchProducts = async () => {
     try {
       const response = await axios.get(`${baseApi}/products/getProducts`);
-      
       const products: Product[] = response.data.products;
-  
-      console.log("Fetched products:", products);
-  
-      // Log each product's image URL to check if it's coming from S3
-      products.forEach((product: Product) => {
-        console.log("MainImage URL:", product.MainImage);
-        console.log("Image2 URL:", product.image2);
-        console.log("Image3 URL:", product.image3);
-        console.log("Image4 URL:", product.image4);
-      });
-  
+
       setProducts(products);
       setFilteredProducts(products);
     } catch (error) {
       toast.error("Failed to fetch products.");
-      console.error("Failed to fetch products", error);
     }
   };
 
   const addProduct = async () => {
-    setError(null); 
+    setError(null);
 
     if (
       !title ||
@@ -106,6 +105,8 @@ const ProductsList = () => {
     }
 
     try {
+      setLoading(true); // Set loading to true when the request starts
+
       const formData = new FormData();
       formData.append("title", title);
       formData.append("price", price.toString());
@@ -140,8 +141,9 @@ const ProductsList = () => {
       toast.success("Product added successfully!");
     } catch (error) {
       toast.error("Failed to add product.");
-      console.error("Failed to add product", error);
       setError("Failed to add product. Please try again.");
+    } finally {
+      setLoading(false); // Reset loading state after the request is complete
     }
   };
 
@@ -173,13 +175,13 @@ const ProductsList = () => {
     });
 
     setImageStates([
-      { file: null, preview: `${baseApi}/${product.MainImage}` },
-      { file: null, preview: `${baseApi}/${product.image2}` },
-      { file: null, preview: `${baseApi}/${product.image3}` },
-      { file: null, preview: `${baseApi}/${product.image4}` },
+      { file: null, preview: product.MainImage || "" }, // baseApi qo‘shilmadi
+      { file: null, preview: product.image2 || "" },
+      { file: null, preview: product.image3 || "" },
+      { file: null, preview: product.image4 || "" },
     ]);
 
-    setOpenEdit(true); // Open the edit modal
+    setOpenEdit(true);
   };
 
   const handleSaveEdit = async () => {
@@ -198,8 +200,6 @@ const ProductsList = () => {
     formData.append("description", editData.description);
     formData.append("type", editData.type);
 
-    console.log("Saving product with state:", editData);
-
     if (imageStates[0].file) formData.append("MainImage", imageStates[0].file);
     if (imageStates[1].file) formData.append("image2", imageStates[1].file);
     if (imageStates[2].file) formData.append("image3", imageStates[2].file);
@@ -215,7 +215,6 @@ const ProductsList = () => {
           },
         }
       );
-      console.log("Failed to products");
 
       if (data.success) {
         toast.success("Product updated successfully!");
@@ -223,7 +222,6 @@ const ProductsList = () => {
         setOpenEdit(false);
       }
     } catch (error) {
-      console.error("Update failed:", error);
       toast.error("Update failed");
     }
   };
@@ -238,7 +236,7 @@ const ProductsList = () => {
       newImageStates[index] = { file, preview: URL.createObjectURL(file) };
       setImageStates(newImageStates);
 
-      if (index === 0) setMainImage(file); // Set MainImage specifically
+      if (index === 0) setMainImage(file);
       if (index === 1) setImage2(file);
       if (index === 2) setImage3(file);
       if (index === 3) setImage4(file);
@@ -274,10 +272,12 @@ const ProductsList = () => {
 
   const handleReset = () => {
     setSearch("");
-    setCategory(""); 
+    setCategory("");
     setPriceFilter("");
-    setFilteredProducts(products); 
+    setFilteredProducts(products);
   };
+
+  
 
   return (
     <Container>
@@ -390,8 +390,6 @@ const ProductsList = () => {
                         style={{ display: "none" }}
                         onChange={(e) => handleFileChange(e, index)}
                       />
-
-                      {/* Show image preview or plus icon */}
                       {imageStates[index].file ? (
                         <img
                           src={URL.createObjectURL(imageStates[index].file!)}
@@ -536,7 +534,13 @@ const ProductsList = () => {
                   <Button color="success" onClick={handleClose}>
                     Cancel
                   </Button>
-                  <Button onClick={addProduct}>Add</Button>
+                  <Button onClick={addProduct} disabled={loading}>
+                    {loading ? (
+                      <CircularProgress sx={{ marginRight: "10px" }} />
+                    ) : (
+                      "Add"
+                    )}
+                  </Button>
                 </Typography>
               </ModalDialog>
             </Modal>
@@ -650,18 +654,49 @@ const ProductsList = () => {
                       product.title.slice(1)}
                   </td>
                   <td>
-                    <img
-                      src={product.MainImage}
-                      alt="product image"
+                    <div
                       style={{
                         width: "40px",
                         height: "40px",
-                        objectFit: "cover",
-                        borderRadius: "8px",
-                        border: "solid black 1px",
+                        position: "relative",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
                       }}
-                    />
+                    >
+                      {imgLoading[product._id] !== false && (
+                        <CircularProgress size="sm" />
+                      )}
+                      <img
+                        src={product.MainImage}
+                        alt="product image"
+                        onLoad={() =>
+                          setImgLoading((prev) => ({
+                            ...prev,
+                            [product._id]: false,
+                          }))
+                        }
+                        onError={() =>
+                          setImgLoading((prev) => ({
+                            ...prev,
+                            [product._id]: false,
+                          }))
+                        }
+                        style={{
+                          display:
+                            imgLoading[product._id] === false
+                              ? "block"
+                              : "none",
+                          width: "40px",
+                          height: "40px",
+                          objectFit: "cover",
+                          borderRadius: "8px",
+                          border: "solid black 1px",
+                        }}
+                      />
+                    </div>
                   </td>
+
                   <td>{product.price}$</td>
                   <td>
                     {product.type.charAt(0).toUpperCase() +
