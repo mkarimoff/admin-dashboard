@@ -45,6 +45,7 @@ const ProductsList = () => {
   const { mode } = useColorScheme();
   const [openAdd, setOpenAdd] = React.useState(false);
   const [openEdit, setOpenEdit] = React.useState(false);
+  const [loading, setLoading] = useState(false);
   const handleClose = () => setOpenAdd(false);
   const handleCloseEdit = () => setOpenEdit(false);
   const [products, setProducts] = useState<Product[]>([]);
@@ -64,9 +65,23 @@ const ProductsList = () => {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<string | null>(null);
   const [priceFilter, setPriceFilter] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
   const [imgLoading, setImgLoading] = useState<{ [key: string]: boolean }>({});
 
+  const [imageStates, setImageStates] = useState<ImageState[]>([
+    { file: null, preview: "" },
+    { file: null, preview: "" },
+    { file: null, preview: "" },
+    { file: null, preview: "" },
+  ]);
+
+  const [editData, setEditData] = useState({
+    title: "",
+    price: "" as string | number,
+    description: "",
+    discount: "" as string | number,
+    quantity: "" as string | number,
+    type: "",
+  });
 
   useEffect(() => {
     fetchProducts();
@@ -76,7 +91,6 @@ const ProductsList = () => {
     try {
       const response = await axios.get(`${baseApi}/products/getProducts`);
       const products: Product[] = response.data.products;
-
       setProducts(products);
       setFilteredProducts(products);
     } catch (error) {
@@ -105,8 +119,7 @@ const ProductsList = () => {
     }
 
     try {
-      setLoading(true); // Set loading to true when the request starts
-
+      setLoading(true);
       const formData = new FormData();
       formData.append("title", title);
       formData.append("price", price.toString());
@@ -137,31 +150,35 @@ const ProductsList = () => {
       setImage2(null);
       setImage3(null);
       setImage4(null);
+      setImageStates([
+        { file: null, preview: "" },
+        { file: null, preview: "" },
+        { file: null, preview: "" },
+        { file: null, preview: "" },
+      ]);
       setOpenAdd(false);
       toast.success("Product added successfully!");
     } catch (error) {
       toast.error("Failed to add product.");
       setError("Failed to add product. Please try again.");
     } finally {
-      setLoading(false); // Reset loading state after the request is complete
+      setLoading(false);
     }
   };
 
-  const [imageStates, setImageStates] = useState<ImageState[]>([
-    { file: null, preview: "" },
-    { file: null, preview: "" },
-    { file: null, preview: "" },
-    { file: null, preview: "" },
-  ]);
-
-  const [editData, setEditData] = useState({
-    title: "",
-    price: "" as string | number,
-    description: "",
-    discount: "" as string | number,
-    quantity: "" as string | number,
-    type: "",
-  });
+  
+  const normalizeImageUrl = (imagePath: string | null | undefined): string => {
+    if (!imagePath) return "";
+   
+    if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+      return imagePath;
+    }
+   
+    const cleanPath = imagePath.startsWith("/") ? imagePath.slice(1) : imagePath;
+   
+    const cleanBaseApi = baseApi.endsWith("/") ? baseApi.slice(0, -1) : baseApi;
+    return `${cleanBaseApi}/${cleanPath}`;
+  };
 
   const handleOpenEdit = (product: Product) => {
     setProductId(product._id);
@@ -175,36 +192,83 @@ const ProductsList = () => {
     });
 
     setImageStates([
-      { file: null, preview: product.MainImage || "" }, // baseApi qo‘shilmadi
-      { file: null, preview: product.image2 || "" },
-      { file: null, preview: product.image3 || "" },
-      { file: null, preview: product.image4 || "" },
+      { file: null, preview: normalizeImageUrl(product.MainImage) },
+      { file: null, preview: normalizeImageUrl(product.image2) },
+      { file: null, preview: normalizeImageUrl(product.image3) },
+      { file: null, preview: normalizeImageUrl(product.image4) },
     ]);
 
     setOpenEdit(true);
   };
 
   const handleSaveEdit = async () => {
+    setError(null);
+  
+    if (
+      !editData.title ||
+      !editData.quantity ||
+      !editData.price ||
+      editData.discount === "" ||
+      !editData.description ||
+      !editData.type
+    ) {
+      setError("All fields are required.");
+      return;
+    }
+  
+    if (typeof editData.price !== "number" || editData.price <= 0) {
+      setError("Price must be a valid number greater than zero.");
+      return;
+    }
+  
+    setLoading(true);
     const formData = new FormData();
-
     formData.append("title", editData.title);
-    formData.append("price", editData.price ? editData.price.toString() : "0");
-    formData.append(
-      "quantity",
-      editData.quantity ? editData.quantity.toString() : "0"
-    );
-    formData.append(
-      "discount",
-      editData.discount ? editData.discount.toString() : "0"
-    );
+    formData.append("price", editData.price.toString());
+    formData.append("quantity", editData.quantity.toString());
+    formData.append("discount", editData.discount.toString());
     formData.append("description", editData.description);
     formData.append("type", editData.type);
-
-    if (imageStates[0].file) formData.append("MainImage", imageStates[0].file);
-    if (imageStates[1].file) formData.append("image2", imageStates[1].file);
-    if (imageStates[2].file) formData.append("image3", imageStates[2].file);
-    if (imageStates[3].file) formData.append("image4", imageStates[3].file);
-
+  
+    // Get the current product to access existing image paths
+    const currentProduct = products.find((p) => p._id === productId);
+  
+    // Handle MainImage
+    if (imageStates[0].file) {
+      formData.append("MainImage", imageStates[0].file);
+      formData.append("replaceMainImage", "true");
+      if (currentProduct?.MainImage) {
+        formData.append("oldMainImage", currentProduct.MainImage);
+      }
+    }
+  
+    // Handle image2
+    if (imageStates[1].file) {
+      formData.append("image2", imageStates[1].file);
+      formData.append("replaceImage2", "true");
+      if (currentProduct?.image2) {
+        formData.append("oldImage2", currentProduct.image2);
+      }
+    }
+  
+    // Handle image3
+    if (imageStates[2].file) {
+      formData.append("image3", imageStates[2].file);
+      formData.append("replaceImage3", "true");
+      if (currentProduct?.image3) {
+        formData.append("oldImage3", currentProduct.image3);
+      }
+    }
+  
+    // Handle image4
+    if (imageStates[3].file) {
+      formData.append("image4", imageStates[3].file); // Fixed typo from previous version
+      formData.append("replaceImage4", "true");
+      if (currentProduct?.image4) {
+        formData.append("oldImage4", currentProduct.image4);
+      }
+    }
+  
     try {
       const { data } = await axios.put(
         `${baseApi}/products/update/${productId}`,
@@ -215,14 +279,23 @@ const ProductsList = () => {
           },
         }
       );
-
+  
       if (data.success) {
         toast.success("Product updated successfully!");
         fetchProducts();
         setOpenEdit(false);
+        setImageStates([
+          { file: null, preview: "" },
+          { file: null, preview: "" },
+          { file: null, preview: "" },
+          { file: null, preview: "" },
+        ]);
       }
     } catch (error) {
+      setError("Failed to update product. Please try again.");
       toast.error("Update failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -277,8 +350,6 @@ const ProductsList = () => {
     setFilteredProducts(products);
   };
 
-  
-
   return (
     <Container>
       <Box
@@ -314,9 +385,8 @@ const ProductsList = () => {
                   left: "50%",
                   transform: "translate(-30%, -50%)",
                   width: 800,
-
                   bgcolor:
-                    mode === "dark" ? theme.palette.background.level1 : "white", // dynamically changes
+                    mode === "dark" ? theme.palette.background.level1 : "white",
                   border: "1px solid black",
                   borderColor: theme.palette.divider,
                   p: 10,
@@ -566,9 +636,7 @@ const ProductsList = () => {
         <Select
           placeholder="Category"
           value={category}
-          onChange={(event, value) => {
-            setCategory(value);
-          }}
+          onChange={(_, value) => setCategory(value)}
           indicator={<KeyboardArrowDown />}
           sx={{
             flex: 2,
@@ -590,7 +658,7 @@ const ProductsList = () => {
         <Select
           placeholder="Price"
           value={priceFilter}
-          onChange={(event, value) => setPriceFilter(value)}
+          onChange={(_, value) => setPriceFilter(value)}
           indicator={<KeyboardArrowDown />}
           sx={{
             flex: 1,
@@ -664,39 +732,41 @@ const ProductsList = () => {
                         justifyContent: "center",
                       }}
                     >
-                      {imgLoading[product._id] !== false && (
+                      {imgLoading[product._id] && (
                         <CircularProgress size="sm" />
                       )}
-                      <img
-                        src={product.MainImage}
-                        alt="product image"
-                        onLoad={() =>
-                          setImgLoading((prev) => ({
-                            ...prev,
-                            [product._id]: false,
-                          }))
-                        }
-                        onError={() =>
-                          setImgLoading((prev) => ({
-                            ...prev,
-                            [product._id]: false,
-                          }))
-                        }
-                        style={{
-                          display:
-                            imgLoading[product._id] === false
-                              ? "block"
-                              : "none",
-                          width: "40px",
-                          height: "40px",
-                          objectFit: "cover",
-                          borderRadius: "8px",
-                          border: "solid black 1px",
-                        }}
-                      />
+                      {product.MainImage ? (
+                        <img
+                          src={normalizeImageUrl(product.MainImage)}
+                          alt="product image"
+                          onLoad={() =>
+                            setImgLoading((prev) => ({
+                              ...prev,
+                              [product._id]: false,
+                            }))
+                          }
+                          onError={() =>
+                            setImgLoading((prev) => ({
+                              ...prev,
+                              [product._id]: false,
+                            }))
+                          }
+                          style={{
+                            display: imgLoading[product._id]
+                              ? "none"
+                              : "block",
+                            width: "40px",
+                            height: "40px",
+                            objectFit: "cover",
+                            borderRadius: "8px",
+                            border: "solid black 1px",
+                          }}
+                        />
+                      ) : (
+                        <span style={{ color: "#aaa" }}>No Image</span>
+                      )}
                     </div>
                   </td>
-
                   <td>{product.price}$</td>
                   <td>
                     {product.type.charAt(0).toUpperCase() +
@@ -713,12 +783,12 @@ const ProductsList = () => {
                       </Typography>
                       <Modal
                         open={openEdit}
-                        onClose={handleClose}
+                        onClose={handleCloseEdit}
                         slotProps={{
                           backdrop: {
                             sx: {
                               backgroundColor: "rgba(255, 255, 255, 0.03)",
-                              backdropFilter: "blur(2px)",
+                              backdropFilter: "blur(4px)",
                             },
                           },
                         }}
@@ -744,8 +814,97 @@ const ProductsList = () => {
                             component="h2"
                             sx={{ marginLeft: "-35px" }}
                           >
-                            Edit product
+                            Edit Product
                           </Typography>
+
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: "9px",
+                              marginLeft: "-35px",
+                            }}
+                          >
+                            {[0, 1, 2, 3].map((index) => (
+                              <div
+                                key={index}
+                                style={{
+                                  position: "relative",
+                                  width: "80px",
+                                  height: "90px",
+                                  border: "2px dashed #ccc",
+                                  borderRadius: "12px",
+                                  cursor: "pointer",
+                                  overflow: "hidden",
+                                  marginTop: "10px",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  textAlign: "center",
+                                  fontSize: "10px",
+                                  backgroundColor:
+                                    mode === "dark"
+                                      ? theme.palette.background.level1
+                                      : "white",
+                                }}
+                                onClick={() =>
+                                  document
+                                    .getElementById(
+                                      `image-upload-edit-${index}`
+                                    )
+                                    ?.click()
+                                }
+                              >
+                                {index === 0 && (
+                                  <div
+                                    style={{
+                                      position: "absolute",
+                                      top: "4px",
+                                      left: "4px",
+                                      backgroundColor: "#1976d2",
+                                      color: "white",
+                                      fontSize: "10px",
+                                      padding: "2px 6px",
+                                      borderRadius: "4px",
+                                      zIndex: 2,
+                                    }}
+                                  >
+                                    Main
+                                  </div>
+                                )}
+
+                                <input
+                                  type="file"
+                                  id={`image-upload-edit-${index}`}
+                                  accept="image/*"
+                                  style={{ display: "none" }}
+                                  onChange={(e) => handleFileChange(e, index)}
+                                />
+                                {imageStates[index].preview ? (
+                                  <img
+                                    src={imageStates[index].preview}
+                                    alt={`image-${index}`}
+                                    style={{
+                                      width: "100%",
+                                      height: "100%",
+                                      objectFit: "cover",
+                                    }}
+                                  />
+                                ) : (
+                                  <span
+                                    style={{
+                                      fontSize: "40px",
+                                      color: "#aaa",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                    }}
+                                  >
+                                    +
+                                  </span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
 
                           <ProductModal>
                             <div className="inputs-con">
@@ -845,7 +1004,6 @@ const ProductsList = () => {
                                     color: theme.palette.text.primary,
                                   }}
                                 />
-
                                 <select
                                   value={editData.type}
                                   onChange={(e) =>
@@ -868,7 +1026,6 @@ const ProductsList = () => {
                                   <option value="sofa">Sofa</option>
                                   <option value="table">Table</option>
                                 </select>
-
                                 {error && (
                                   <p
                                     style={{ color: "red", fontWeight: "bold" }}
@@ -891,7 +1048,15 @@ const ProductsList = () => {
                             <Button color="success" onClick={handleCloseEdit}>
                               Cancel
                             </Button>
-                            <Button onClick={handleSaveEdit}>Save</Button>
+                            <Button onClick={handleSaveEdit} disabled={loading}>
+                              {loading ? (
+                                <CircularProgress
+                                  sx={{ marginRight: "10px" }}
+                                />
+                              ) : (
+                                "Save"
+                              )}
+                            </Button>
                           </Typography>
                         </ModalDialog>
                       </Modal>
