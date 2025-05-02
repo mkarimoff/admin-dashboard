@@ -166,16 +166,17 @@ const ProductsList = () => {
     }
   };
 
-  
   const normalizeImageUrl = (imagePath: string | null | undefined): string => {
     if (!imagePath) return "";
-   
+
     if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
       return imagePath;
     }
-   
-    const cleanPath = imagePath.startsWith("/") ? imagePath.slice(1) : imagePath;
-   
+
+    const cleanPath = imagePath.startsWith("/")
+      ? imagePath.slice(1)
+      : imagePath;
+
     const cleanBaseApi = baseApi.endsWith("/") ? baseApi.slice(0, -1) : baseApi;
     return `${cleanBaseApi}/${cleanPath}`;
   };
@@ -203,7 +204,7 @@ const ProductsList = () => {
 
   const handleSaveEdit = async () => {
     setError(null);
-  
+
     if (
       !editData.title ||
       !editData.quantity ||
@@ -215,12 +216,12 @@ const ProductsList = () => {
       setError("All fields are required.");
       return;
     }
-  
+
     if (typeof editData.price !== "number" || editData.price <= 0) {
       setError("Price must be a valid number greater than zero.");
       return;
     }
-  
+
     setLoading(true);
     const formData = new FormData();
     formData.append("title", editData.title);
@@ -229,9 +230,9 @@ const ProductsList = () => {
     formData.append("discount", editData.discount.toString());
     formData.append("description", editData.description);
     formData.append("type", editData.type);
-  
+
     const currentProduct = products.find((p) => p._id === productId);
-  
+
     if (imageStates[0].file) {
       formData.append("MainImage", imageStates[0].file);
       formData.append("replaceMainImage", "true");
@@ -239,7 +240,7 @@ const ProductsList = () => {
         formData.append("oldMainImage", currentProduct.MainImage);
       }
     }
-  
+
     if (imageStates[1].file) {
       formData.append("image2", imageStates[1].file);
       formData.append("replaceImage2", "true");
@@ -247,7 +248,7 @@ const ProductsList = () => {
         formData.append("oldImage2", currentProduct.image2);
       }
     }
-  
+
     if (imageStates[2].file) {
       formData.append("image3", imageStates[2].file);
       formData.append("replaceImage3", "true");
@@ -255,15 +256,15 @@ const ProductsList = () => {
         formData.append("oldImage3", currentProduct.image3);
       }
     }
-  
+
     if (imageStates[3].file) {
-      formData.append("image4", imageStates[3].file); 
+      formData.append("image4", imageStates[3].file);
       formData.append("replaceImage4", "true");
       if (currentProduct?.image4) {
         formData.append("oldImage4", currentProduct.image4);
       }
     }
-  
+
     try {
       const { data } = await axios.put(
         `${baseApi}/products/update/${productId}`,
@@ -274,7 +275,7 @@ const ProductsList = () => {
           },
         }
       );
-  
+
       if (data.success) {
         toast.success("Product updated successfully!");
         fetchProducts();
@@ -574,10 +575,14 @@ const ProductsList = () => {
                         }}
                       >
                         <option value="">Select type</option>
+                        <option value="bed">Bed</option>
+                        <option value="cabinet">Cabinet</option>
                         <option value="chair">Chair</option>
+                        <option value="desk">Desk</option>
                         <option value="drawer">Drawer</option>
                         <option value="sofa">Sofa</option>
                         <option value="table">Table</option>
+                        <option value="wardrobes">Wardrobe</option>
                       </select>
                       {error && (
                         <p style={{ color: "red", fontWeight: "bold" }}>
@@ -644,10 +649,15 @@ const ProductsList = () => {
           }}
         >
           <Option value="">All Categories</Option>
+          <Option value="">Select type</Option>
+          <Option value="bed">Bed</Option>
+          <Option value="cabinet">Cabinet</Option>
           <Option value="chair">Chair</Option>
+          <Option value="desk">Desk</Option>
           <Option value="drawer">Drawer</Option>
           <Option value="sofa">Sofa</Option>
           <Option value="table">Table</Option>
+          <Option value="wardrobes">Wardrobe</Option>
         </Select>
 
         <Select
@@ -747,9 +757,7 @@ const ProductsList = () => {
                             }))
                           }
                           style={{
-                            display: imgLoading[product._id]
-                              ? "none"
-                              : "block",
+                            display: imgLoading[product._id] ? "none" : "block",
                             width: "40px",
                             height: "40px",
                             objectFit: "cover",
@@ -1016,10 +1024,14 @@ const ProductsList = () => {
                                   }}
                                 >
                                   <option value="">Select type</option>
+                                  <option value="bed">Bed</option>
+                                  <option value="cabinet">Cabinet</option>
                                   <option value="chair">Chair</option>
+                                  <option value="desk">Desk</option>
                                   <option value="drawer">Drawer</option>
                                   <option value="sofa">Sofa</option>
                                   <option value="table">Table</option>
+                                  <option value="wardrobes">Wardrobe</option>
                                 </select>
                                 {error && (
                                   <p
