@@ -1,1 +1,1 @@
-export const baseApi = "http://localhost:5050/dev-api"
+export const baseApi = "https://api.furnimall.shop"

@@ -10,6 +10,7 @@ import ListItemButton, { listItemButtonClasses } from "@mui/joy/ListItemButton";
 import ListItemDecorator from "@mui/joy/ListItemDecorator";
 import { Divider } from "@mui/joy";
 import { Link } from "react-router-dom";
+import { baseApi } from "../../utils/api";
 
 interface Message {
   _id: string;
@@ -28,7 +29,7 @@ export default function EmailLists() {
     const fetchMessages = async () => {
       try {
         const res = await axios.get<{ messages: Message[] }>(
-          "http://localhost:5050/dev-api/messages/allMessages"
+         baseApi + "/messages/allMessages"
         );
         const validMessages: Message[] = res.data.messages.filter(
           (msg: Message) =>

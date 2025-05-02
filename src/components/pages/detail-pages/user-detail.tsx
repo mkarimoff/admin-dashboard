@@ -42,7 +42,7 @@ const UsersDetail = () => {
     try {
       await axios.delete(`${baseApi}/auth/deleteUser/${id}`);
       toast.success("User deleted successfully");
-      setUser(null); // clear the deleted user's data
+      setUser(null); 
       navigate("/users-list");
     } catch (error) {
       toast.error("Failed to delete user.");

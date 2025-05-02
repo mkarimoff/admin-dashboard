@@ -20,6 +20,7 @@ import Button from "@mui/joy/Button";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.svg";
 import axios from "axios";
+import { baseApi } from "./utils/api";
 
 export default function Sidebar() {
   const [messageCount, setMessageCount] = React.useState<number>(0);
@@ -35,7 +36,7 @@ export default function Sidebar() {
     const fetchMessageCount = async () => {
       try {
         const res = await axios.get(
-          "http://localhost:5050/dev-api/messages/allMessages"
+         baseApi + "/messages/allMessages"
         );
         setMessageCount(res.data.messages.length);
       } catch (error) {

@@ -230,10 +230,8 @@ const ProductsList = () => {
     formData.append("description", editData.description);
     formData.append("type", editData.type);
   
-    // Get the current product to access existing image paths
     const currentProduct = products.find((p) => p._id === productId);
   
-    // Handle MainImage
     if (imageStates[0].file) {
       formData.append("MainImage", imageStates[0].file);
       formData.append("replaceMainImage", "true");
@@ -242,7 +240,6 @@ const ProductsList = () => {
       }
     }
   
-    // Handle image2
     if (imageStates[1].file) {
       formData.append("image2", imageStates[1].file);
       formData.append("replaceImage2", "true");
@@ -251,7 +248,6 @@ const ProductsList = () => {
       }
     }
   
-    // Handle image3
     if (imageStates[2].file) {
       formData.append("image3", imageStates[2].file);
       formData.append("replaceImage3", "true");
@@ -260,9 +256,8 @@ const ProductsList = () => {
       }
     }
   
-    // Handle image4
     if (imageStates[3].file) {
-      formData.append("image4", imageStates[3].file); // Fixed typo from previous version
+      formData.append("image4", imageStates[3].file); 
       formData.append("replaceImage4", "true");
       if (currentProduct?.image4) {
         formData.append("oldImage4", currentProduct.image4);

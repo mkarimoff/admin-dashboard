@@ -15,6 +15,7 @@ import ReplyRoundedIcon from "@mui/icons-material/ReplyRounded";
 import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
 import WriteEmail from "./reply";
 import { toast } from "react-toastify";
+import { baseApi } from "../../utils/api";
 
 interface Message {
   _id: string;
@@ -40,15 +41,13 @@ export default function EmailContent() {
   const deleteMessage = async (id: string) => {
     try {
       await axios.delete(
-        `http://localhost:5050/dev-api/messages/deleteMessage/${id}`
+       baseApi + `/messages/deleteMessage/${id}`
       );
 
-      // Show the Snackbar (set open[2] to true)
       const updatedOpen = [...open];
       updatedOpen[2] = true;
       setOpen(updatedOpen);
 
-      // Optional: navigate after a delay so the Snackbar is visible briefly
       setTimeout(() => {
         navigate("/emails");
       }, 1500);
@@ -66,7 +65,7 @@ export default function EmailContent() {
     const fetchMessage = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:5050/dev-api/messages/getMessage/${id}`
+         baseApi + `/messages/getMessage/${id}`
         );
         setMessage(res.data.message);
       } catch (err: any) {
