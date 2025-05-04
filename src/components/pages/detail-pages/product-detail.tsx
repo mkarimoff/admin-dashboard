@@ -53,7 +53,6 @@ const ProductDetail = () => {
         prod.image4 || null,
       ]);
     } catch (error) {
-      console.error("Failed to fetch product by ID", error);
     }
   };
 
@@ -64,7 +63,6 @@ const ProductDetail = () => {
       toast.success("Product deleted successfully!");
     } catch (error) {
       toast.error("Failed to fetch products.");
-      console.error("Failed to fetch products", error);
     }
   };
 
@@ -75,7 +73,6 @@ const ProductDetail = () => {
       fetchProducts();
     } catch (error) {
       toast.error("Failed to delete product.");
-      console.error("Failed to delete product", error);
     } finally {
       setLoading(false);
     }

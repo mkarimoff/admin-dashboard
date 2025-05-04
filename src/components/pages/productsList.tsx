@@ -1,5 +1,6 @@
 import Table from "@mui/joy/Table";
 import Sheet from "@mui/joy/Sheet";
+import Skeleton from "@mui/joy/Skeleton";
 import {
   Box,
   Button,
@@ -45,7 +46,7 @@ const ProductsList = () => {
   const { mode } = useColorScheme();
   const [openAdd, setOpenAdd] = React.useState(false);
   const [openEdit, setOpenEdit] = React.useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const handleClose = () => setOpenAdd(false);
   const handleCloseEdit = () => setOpenEdit(false);
   const [products, setProducts] = useState<Product[]>([]);
@@ -89,12 +90,15 @@ const ProductsList = () => {
 
   const fetchProducts = async () => {
     try {
+      setLoading(true);
       const response = await axios.get(`${baseApi}/products/getProducts`);
       const products: Product[] = response.data.products;
       setProducts(products);
       setFilteredProducts(products);
     } catch (error) {
       toast.error("Failed to fetch products.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -346,6 +350,22 @@ const ProductsList = () => {
     setFilteredProducts(products);
   };
 
+  const renderSkeletonRows = () => {
+    return Array.from({ length: 5 }).map((_, index) => (
+      <tr key={`skeleton-${index}`}>
+        <td><Skeleton variant="text" width={40} /></td>
+        <td><Skeleton variant="text" width={200} /></td>
+        <td>
+          <Skeleton variant="rectangular" width={40} height={40} />
+        </td>
+        <td><Skeleton variant="text" width={60} /></td>
+        <td><Skeleton variant="text" width={80} /></td>
+        <td><Skeleton variant="text" width={40} /></td>
+        <td><Skeleton variant="text" width={40} /></td>
+      </tr>
+    ));
+  };
+
   return (
     <Container>
       <Box
@@ -508,12 +528,12 @@ const ProductsList = () => {
                           setPrice(isNaN(val) ? 0 : val);
                         }}
                         style={{
-                          background:
-                            theme.palette.mode === "light"
-                              ? "#F5F5F5"
-                              : theme.palette.background.surface,
-                          color: theme.palette.text.primary,
-                        }}
+                            background:
+                              theme.palette.mode === "light"
+                                ? "#F5F5F5"
+                                : theme.palette.background.surface,
+                            color: theme.palette.text.primary,
+                          }}
                       />
                       <input
                         type="text"
@@ -709,7 +729,9 @@ const ProductsList = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredProducts.length === 0 ? (
+            {loading ? (
+              renderSkeletonRows()
+            ) : filteredProducts.length === 0 ? (
               <tr>
                 <td
                   colSpan={7}

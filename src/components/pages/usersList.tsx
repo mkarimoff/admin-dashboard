@@ -1,5 +1,6 @@
 import Table from "@mui/joy/Table";
 import Sheet from "@mui/joy/Sheet";
+import Skeleton from "@mui/joy/Skeleton";
 import { Box, Button, Input, Typography } from "@mui/joy";
 import { Link } from "react-router-dom";
 import { Container } from "../styles";
@@ -18,6 +19,7 @@ interface User {
 const UsersList = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchUsers();
@@ -25,10 +27,13 @@ const UsersList = () => {
 
   const fetchUsers = async () => {
     try {
+      setLoading(true);
       const response = await axios.get(`${baseApi}/auth/users`);
       setUsers(response.data.users);
     } catch (error) {
       console.error("Failed to fetch users", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -58,6 +63,18 @@ const UsersList = () => {
     const cleaned = phone.replace(/\D/g, "");
     const match = cleaned.match(/^(\d{3})(\d{4})(\d{4})$/);
     return match ? `${match[1]}-${match[2]}-${match[3]}` : phone;
+  };
+
+  const renderSkeletonRows = () => {
+    return Array.from({ length: 5 }).map((_, index) => (
+      <tr key={`skeleton-${index}`}>
+        <td><Skeleton variant="text" width={40} /></td>
+        <td><Skeleton variant="text" width={150} /></td>
+        <td><Skeleton variant="text" width={200} /></td>
+        <td><Skeleton variant="text" width={100} /></td>
+        <td><Skeleton variant="text" width={40} /></td>
+      </tr>
+    ));
   };
 
   return (
@@ -111,7 +128,9 @@ const UsersList = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredUsers.length > 0 ? (
+            {loading ? (
+              renderSkeletonRows()
+            ) : filteredUsers.length > 0 ? (
               filteredUsers.map((user, index) => (
                 <tr key={user._id}>
                   <td>{index + 1}</td>
@@ -119,7 +138,7 @@ const UsersList = () => {
                     {capitalize(user.firstName)} {capitalize(user.lastName)}
                   </td>
                   <td>{user.email}</td>
-                  <td>{formatPhoneNumber (user.number)}</td>
+                  <td>{formatPhoneNumber(user.number)}</td>
                   <td>
                     <Link
                       to={`/user-detail/${user._id}`}
