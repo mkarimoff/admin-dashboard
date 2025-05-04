@@ -7,6 +7,7 @@ import { Container } from "../styles";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { baseApi } from "../utils/api";
+import ExcelJS from "exceljs";
 
 interface User {
   _id: string;
@@ -65,14 +66,98 @@ const UsersList = () => {
     return match ? `${match[1]}-${match[2]}-${match[3]}` : phone;
   };
 
+  const handleDownloadExcel = async () => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Users");
+
+    // Define columns
+    worksheet.columns = [
+      { header: "No", key: "no", width: 10 },
+      { header: "User's Name", key: "name", width: 25 },
+      { header: "Email", key: "email", width: 30 },
+      { header: "Contact", key: "contact", width: 15 },
+    ];
+
+    // Add table data
+    filteredUsers.forEach((user, index) => {
+      worksheet.addRow({
+        no: index + 1,
+        name: `${capitalize(user.firstName)} ${capitalize(user.lastName)}`,
+        email: user.email,
+        contact: formatPhoneNumber(user.number),
+      });
+    });
+
+    // Add table to worksheet
+    worksheet.addTable({
+      name: "UsersTable",
+      ref: "A1",
+      headerRow: true,
+      totalsRow: false,
+      style: {
+        theme: "TableStyleMedium2",
+        showRowStripes: true,
+      },
+      columns: [
+        { name: "No", filterButton: false },
+        { name: "User's Name", filterButton: false },
+        { name: "Email", filterButton: false },
+        { name: "Contact", filterButton: false },
+      ],
+      rows: filteredUsers.map((user, index) => [
+        index + 1,
+        `${capitalize(user.firstName)} ${capitalize(user.lastName)}`,
+        user.email,
+        formatPhoneNumber(user.number),
+      ]),
+    });
+
+    // Apply borders to all cells
+    worksheet.eachRow((row, rowNumber) => {
+      row.eachCell((cell) => {
+        cell.border = {
+          top: { style: "thin" },
+          left: { style: "thin" },
+          bottom: { style: "thin" },
+          right: { style: "thin" },
+        };
+        if (rowNumber === 1) {
+          cell.font = { bold: true };
+        }
+      });
+    });
+
+    // Generate Excel file
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", "users_list.xlsx");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   const renderSkeletonRows = () => {
     return Array.from({ length: 5 }).map((_, index) => (
       <tr key={`skeleton-${index}`}>
-        <td><Skeleton variant="text" width={40} /></td>
-        <td><Skeleton variant="text" width={150} /></td>
-        <td><Skeleton variant="text" width={200} /></td>
-        <td><Skeleton variant="text" width={100} /></td>
-        <td><Skeleton variant="text" width={40} /></td>
+        <td>
+          <Skeleton variant="text" width={40} />
+        </td>
+        <td>
+          <Skeleton variant="text" width={150} />
+        </td>
+        <td>
+          <Skeleton variant="text" width={200} />
+        </td>
+        <td>
+          <Skeleton variant="text" width={100} />
+        </td>
+        <td>
+          <Skeleton variant="text" width={40} />
+        </td>
       </tr>
     ));
   };
@@ -88,7 +173,9 @@ const UsersList = () => {
       >
         <Typography sx={{ paddingY: 2, fontSize: 30 }}>Users List</Typography>
         <Box sx={{ display: "flex", gap: 2 }}>
-          <Button color="success">Download Excel</Button>
+          <Button color="success" onClick={handleDownloadExcel}>
+            Download Excel
+          </Button>
         </Box>
       </Box>
 

@@ -21,6 +21,7 @@ import { baseApi } from "../utils/api";
 import { useColorScheme } from "@mui/joy/styles";
 import { useTheme } from "@mui/joy/styles";
 import { toast } from "react-toastify";
+import ExcelJS from "exceljs";
 
 interface Product {
   _id: string;
@@ -350,18 +351,110 @@ const ProductsList = () => {
     setFilteredProducts(products);
   };
 
+  const handleDownloadExcel = async () => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Products");
+
+    // Define columns
+    worksheet.columns = [
+      { header: "No", key: "no", width: 10 },
+      { header: "Title", key: "title", width: 30 },
+      { header: "Price", key: "price", width: 15 },
+      { header: "Type", key: "type", width: 15 },
+      { header: "Image", key: "image", width: 40 },
+    ];
+
+    // Add table data
+    filteredProducts.forEach((product, index) => {
+      worksheet.addRow({
+        no: index + 1,
+        title: product.title.charAt(0).toUpperCase() + product.title.slice(1),
+        price: `$${product.price}`,
+        type: product.type.charAt(0).toUpperCase() + product.type.slice(1),
+        image: normalizeImageUrl(product.MainImage) || "No Image",
+      });
+    });
+
+    // Add table to worksheet
+    worksheet.addTable({
+      name: "ProductsTable",
+      ref: "A1",
+      headerRow: true,
+      totalsRow: false,
+      style: {
+        theme: "TableStyleMedium2",
+        showRowStripes: true,
+      },
+      columns: [
+        { name: "No", filterButton: false },
+        { name: "Title", filterButton: false },
+        { name: "Price", filterButton: false },
+        { name: "Type", filterButton: false },
+        { name: "Image", filterButton: false },
+      ],
+      rows: filteredProducts.map((product, index) => [
+        index + 1,
+        product.title.charAt(0).toUpperCase() + product.title.slice(1),
+        `$${product.price}`,
+        product.type.charAt(0).toUpperCase() + product.type.slice(1),
+        normalizeImageUrl(product.MainImage) || "No Image",
+      ]),
+    });
+
+    // Apply borders to all cells
+    worksheet.eachRow((row, rowNumber) => {
+      row.eachCell((cell) => {
+        cell.border = {
+          top: { style: "thin" },
+          left: { style: "thin" },
+          bottom: { style: "thin" },
+          right: { style: "thin" },
+        };
+        if (rowNumber === 1) {
+          cell.font = { bold: true };
+        }
+      });
+    });
+
+    // Generate Excel file
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", "products_list.xlsx");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   const renderSkeletonRows = () => {
     return Array.from({ length: 5 }).map((_, index) => (
       <tr key={`skeleton-${index}`}>
-        <td><Skeleton variant="text" width={40} /></td>
-        <td><Skeleton variant="text" width={200} /></td>
+        <td>
+          <Skeleton variant="text" width={40} />
+        </td>
+        <td>
+          <Skeleton variant="text" width={200} />
+        </td>
         <td>
           <Skeleton variant="rectangular" width={40} height={40} />
         </td>
-        <td><Skeleton variant="text" width={60} /></td>
-        <td><Skeleton variant="text" width={80} /></td>
-        <td><Skeleton variant="text" width={40} /></td>
-        <td><Skeleton variant="text" width={40} /></td>
+        <td>
+          <Skeleton variant="text" width={60} />
+        </td>
+        <td>
+          <Skeleton variant="text" width={80} />
+        </td>
+        <td>
+          <Skeleton variant="text" width={40} />
+        </td>
+        <td>
+          <Skeleton variant="text" width={40} />
+        </td>
       </tr>
     ));
   };
@@ -379,7 +472,9 @@ const ProductsList = () => {
           Products List
         </Typography>
         <Box sx={{ display: "flex", gap: 2 }}>
-          <Button color="success">Download Excel</Button>
+          <Button color="success" onClick={handleDownloadExcel}>
+            Download Excel
+          </Button>
           <div>
             <Button onClick={() => setOpenAdd(true)}>Add New Product</Button>
             <Modal
@@ -525,15 +620,15 @@ const ProductsList = () => {
                         value={price}
                         onChange={(e) => {
                           const val = parseFloat(e.target.value);
-                          setPrice(isNaN(val) ? 0 : val);
+                          setPrice(isNaN(val) ? "" : val);
                         }}
                         style={{
-                            background:
-                              theme.palette.mode === "light"
-                                ? "#F5F5F5"
-                                : theme.palette.background.surface,
-                            color: theme.palette.text.primary,
-                          }}
+                          background:
+                            theme.palette.mode === "light"
+                              ? "#F5F5F5"
+                              : theme.palette.background.surface,
+                          color: theme.palette.text.primary,
+                        }}
                       />
                       <input
                         type="text"
@@ -556,7 +651,7 @@ const ProductsList = () => {
                         value={discount}
                         onChange={(e) => {
                           const val = parseFloat(e.target.value);
-                          setDiscount(isNaN(val) ? 0 : val);
+                          setDiscount(isNaN(val) ? "" : val);
                         }}
                         style={{
                           background:
@@ -572,7 +667,7 @@ const ProductsList = () => {
                         value={quantity}
                         onChange={(e) => {
                           const val = parseFloat(e.target.value);
-                          setQuantity(isNaN(val) ? 0 : val);
+                          setQuantity(isNaN(val) ? "" : val);
                         }}
                         style={{
                           background:
@@ -669,7 +764,6 @@ const ProductsList = () => {
           }}
         >
           <Option value="">All Categories</Option>
-          <Option value="">Select type</Option>
           <Option value="bed">Bed</Option>
           <Option value="cabinet">Cabinet</Option>
           <Option value="chair">Chair</Option>
@@ -960,7 +1054,7 @@ const ProductsList = () => {
                                     const val = parseFloat(e.target.value);
                                     setEditData({
                                       ...editData,
-                                      price: isNaN(val) ? 0 : val,
+                                      price: isNaN(val) ? "" : val,
                                     });
                                   }}
                                   style={{
@@ -999,7 +1093,7 @@ const ProductsList = () => {
                                     const val = parseFloat(e.target.value);
                                     setEditData({
                                       ...editData,
-                                      discount: isNaN(val) ? 0 : val,
+                                      discount: isNaN(val) ? "" : val,
                                     });
                                   }}
                                   style={{
@@ -1018,7 +1112,7 @@ const ProductsList = () => {
                                     const val = parseFloat(e.target.value);
                                     setEditData({
                                       ...editData,
-                                      quantity: isNaN(val) ? 0 : val,
+                                      quantity: isNaN(val) ? "" : val,
                                     });
                                   }}
                                   style={{
